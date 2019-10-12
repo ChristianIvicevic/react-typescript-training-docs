@@ -1,0 +1,289 @@
+[[basics-of-typescript]]
+= Basics of Typescript
+include::attributes.adoc[]
+:imagesdir: ./images/basics-of-typescript/
+
+This section of the documentation introduces you to the Typescript programming language, its type annotations and advantages over Javascript.
+Furthermore it includes details about the basic data types as well as more advanced types.
+
+[[what-is-typescript]]
+== What is Typescript?
+Typescript is a statically typed subset of Javascript, i.e. all valid Javascript code is valid Typescript code, but not the other way round.
+The term statically describes that code written in Typescript can be checked for errors during compilation even before runtime.
+This in turn can reveal bugs that are usually difficult to debug once an application is already running.
+Static type-safety is enabled by so-called type annotations describing and documenting your code and its correct usage.
+With those key features you can write robust and safe code with less bugs and erratic behavior.
+Furthermore consuming third party libraries containing type annotations becomes much easier since you don't have to guess parameter types as code is self-documenting:
+
+.VS Code displaying type annotations when invoking code completion
+[#img-is-prime-1]
+image::is-prime-1.png[]
+
+In <<img-is-prime-1>> you see that the `isPrime` method has one parameer named `arg` of type `number`.
+Trying to supply an argument that isn't sensible yields an error in the editor:
+
+.Typescript will prevent assigning arguments that are imcompatible with parameters
+[#img-is-prime-2]
+image::is-prime-2.png[]
+
+In Vanilla Javascript and without relying on sophisticated tools, you'd see no errors and your application would behave erroneously in the browser causing cryptic error messages.
+Finding these errors during or before compilation in the first place helps to reduce time debugging or fixing bugs.
+
+Microsoft is developing Typescript to make Javascript scale and more bearable at the cost of some overhead writing slightly more code, but strictly checking everything you attempt to do.
+
+[[type-annotations]]
+== Type Annotations
+Type annotations in Typescript are lightweight ways to record the intended contract of a function or variable.
+By appending `: Type` to those elements you can annotate them and make the compiler aware of their contracts as follows:
+
+[source,typescript]
+----
+// Assigning some variables
+const variable1: number = 42;
+const variable2: string = "Hello, Typescript!";
+const variable3: boolean = "wrong type";
+//    ~~~~~~~~~ <1>
+
+// Defining a custom function
+/**
+ * This function takes a number as an argument and returns a boolean.
+ */
+function isThirteen(arg: number): boolean {
+    return arg === 13;
+}
+
+// Attempting to call the custom function and store the return value
+const result1: boolean = isThirteen(42);
+const result2: boolean = isThirteen("42");
+//                                  ~~~~ <2>
+const result3: string = isThirteen(42);
+//    ~~~~~~~ <3>
+----
+<1> `error: Type '"wrong type"' is not assignable to type 'boolean'.`
+<2> `error: Argument of type '"42"' is not assignable to parameter of type 'number'.`
+<3> `error: Type 'boolean' is not assignable to type 'string'.`
+
+The previous snippet shows that even minor additional type annotations help to track down illegal assignments.
+Not only variables but parameters and return values can be annotated to make the compiler keep track of them and notify you if you make a mistake.
+However the previous snippet contains a lot of verbose annotations and fortunately, most of them can be removed.
+Typescript is able to infer a lot of information and implicit types just from their usage.
+The valid lines of the previous snippet can be written as follows:
+
+[source,typescript]
+----
+const variable1 = 42;
+const variable2 = "Hello, Typescript!";
+
+/**
+ * This function takes a number as an argument and returns a boolean.
+ */
+function isThirteen(arg: number) {
+    return arg === 13;
+}
+
+const result1 = isThirteen(42);
+----
+
+Notice that by assigning a constant value of a specific type will narrow down the type of the respective variable, i.e. `variable1` must be number and cannot be anything else after assigning `42`.
+Hovering over the `isThirteen` function in VS Code will yield the infered return type annotation:
+
+.Even though we haven't explicitly declared the return type, Typescript understands that the `isThirteen` method is returning a `boolean` value
+[#type-inference]
+image::type-inference.png[]
+
+[[basic-types]]
+== Basic Types
+Typescript is aware of the usual Javascript data types `boolean`, `number` and `string`, but it allows for more complex types.
+
+[[basic-types-arrays]]
+=== Arrays
+Typescript allows you to work with arrays that are defined like in most other programming languages as follows:
+
+[source,typescript]
+----
+const list: number[] = [3, 1, 4, 1, 5];
+----
+
+[TIP]
+====
+Once again the type annotation `number[]` in the previous snippet can (and should) be omitted, since it can be infered from the right hand side.
+For the purpose of this documentation however, we're usually not omitting them in the upcoming examples to explicitly describe the types we're working with.
+====
+
+[[read-only-arrays]]
+=== Read-only Arrays
+Immutability is another tool to rely on when writing robust code, so Typescript provides the ability to annotate arrays as read-only.
+This means that you will not be able to directly push, remove, shift or replace elements to prevent unexpected mutations.
+To declare a read-only array you have to write `readonly Type[]` as follows:
+
+[source,typescript]
+----
+const list: readonly number[] = [3, 1, 4, 1, 5];
+list.push(9);
+//   ~~~~ <1>
+list[2] = 0;
+//~~~~~ <2>
+----
+<1> `error: Property 'push' does not exist on type 'readonly number[]'.`
+<2> `Index signature in type 'readonly number[]' only permits reading.`
+
+[NOTE]
+====
+In order to make a mutable copy of a read-only array use the spread syntax:
+
+[source,typescript]
+----
+const pi: readonly number[] = [3, 1, 4, 1, 5];
+const newPi: number[] = [...pi];
+----
+
+Even without the explicit `number[]` type annotation `newPi` has the same mutable type.
+====
+
+[WARNING]
+====
+You might be tempted to make a mutable copy of any read-only array, but beware that copying arrays of objects will only copy their references.
+The consequence is the following unexpected behavior:
+
+[source,typescript]
+----
+type Entity = { id: number }; // <1>
+const entities: readonly Entity[] = [
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+];
+
+const entitiesCopy = [...entities]; // <2>
+entitiesCopy[1].id = 13; // <3>
+const isSame = entities[1].id === entitiesCopy[1].id; // <4>
+----
+<1> We haven't introduced this notation of type aliases yet, but basically it is a type called `Entity` which can store a numerical id.
+More information on type aliases can be seen in the section on the topic of advanced types.
+<2> Unexpected behavior: this is NOT an actual clone of all objects and it copies only the references.
+<3> This will mutate both arrays, even our "read-only" one therefore...
+<4> ...both arrays have been mutated and `isSame` will be true since both arrays reference the same objects.
+
+For actual immutable data you have to make sure that `id` in `Entity` is read-only as well and/or that you do not attempt to set any values of objects and replace them entirely instead.
+A combination of both suggestions is this:
+
+[source,typescript]
+----
+type Entity = { readonly id: number }; // <1>
+const entities: readonly Entity[] = [
+    { id: 1 },
+    { id: 2 },
+    { id: 3 },
+];
+
+const entitiesCopy = [...entities]; // <2>
+entitiesCopy[1].id = 13;
+//              ~~ <3>
+entitiesCopy[1] = { id: 13 }; // <4>
+const isSame = entities[1].id === entitiesCopy[1].id; // <5>
+----
+<1> The `id` property is annotated with `readonly`.
+<2> This is STILL a new array with copies of the old object references.
+<3> `error: Cannot assign to 'id' because it is a read-only property.`
+<4> Instead, we can assign a completely new object.
+<5> Thus, `isSame` will be false since we replace the object reference in `entitiesCopy` with a completely new object.
+
+This example demonstrates that marking something as read-only isn't the same as it being immutable.
+====
+
+[[tuples]]
+=== Tuples
+While arrays are dynamic in size and usually homogenous, tuples can be used to describe arrays of fixed length whose element types are heterogenous but known, such as key/value pairs:
+
+[source,typescript]
+----
+const numericValue = 42;
+const kvPair1: [string, number] = ["key", numericValue];
+const kvPair2: [string, number] = ["key", 31];
+const kvPair3: [string, number] = ["key", "value"];
+//                                        ~~~~~~~ <1>
+----
+<1> `error: Type 'string' is not assignable to type 'number'.`
+
+Furthermore accessing the elements of this array correctly retrieves their types allowing safe method calls such as `kvPair1[0].substring(1)`.
+On top of that, accessing elements out of bounds, i.e. trying to read `kvPair2[5]`, will fail already during compilation since tuples have a fixed size:
+
+[source,typescript]
+----
+const noValue = kvPair2[5];
+//                      ~ <1>
+----
+<1> `error: Tuple type '[string, number]' of length '2' has no element at index '5'.`
+
+[[enums]]
+=== Enums
+A feature native to Typescript are enumerations which are used to assign human readable names to compile-time constant values and group them together.
+
+[source,typescript]
+----
+enum Shapes {
+    Circle,
+    Square,
+    Triangle,
+}
+
+const someShape = Shapes.Circle;
+const someOtherShape = Shapes.DoesNotExist;
+//                            ~~~~~~~~~~~~ <1>
+----
+<1> `error: Property 'DoesNotExist' does not exist on type 'typeof Shapes'.`
+
+In enums zero is always assigned to the first element with all other elements being increments of the previous.
+Thus the previous snippet is equivalent to the following:
+
+[source,typescript]
+----
+enum Shapes {
+    Circle = 0,
+    Square = 1,
+    Triangle = 2,
+}
+----
+
+However, you can assign custom numerical or string values to your enum items:
+
+[source,typescript]
+----
+enum Shapes {
+    Circle = 2,
+    Square = 4,
+    Triangle = 8,
+}
+
+enum ErrorMessages {
+    InternalServerError = "An internal server error has occurred.",
+    NotFound = "The requested resource wasn't found on the server.",
+}
+----
+
+Enums allow you to perform reverse lookups wherein numerical values can be mapped to the respective stringified name as follows:
+
+[source,typescript]
+----
+enum Shapes {
+    Circle,
+    Square,
+    Triangle,
+}
+
+const shapeName: string = Shapes[1];
+console.log(shapeName); // <1>
+----
+<1> Displays `Square`.
+
+[IMPORTANT]
+====
+This reverse lookup does not work for enums with string values.
+====
+
+[WARNING]
+====
+Be careful when working with enums, especially when serializing their values to a storage like a database.
+By adding or removing new enum values previously stored values might no longer align with the names and values defined in your code.
+In order to prevent anomalies you should always explicitly assign values to enum items and write tests that assert these values stay the same and/or are in the same order.
+====

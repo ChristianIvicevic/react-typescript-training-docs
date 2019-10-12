@@ -52,7 +52,7 @@ tasks {
         })
         resources(delegateClosureOf<CopySpec> {
             from(sourceDir) {
-                include("images/*", "css/**", "js/**")
+                include("images/**", "css/**", "js/**")
             }
         })
         logDocuments = true
@@ -63,9 +63,9 @@ tasks {
                 "stylesheet" to "spring.css",
                 "linkcss" to true,
                 "icons" to "font",
-                "source-highlighter=highlight.js" to "",
-                "highlightjsdir=js/highlight" to "",
-                "highlightjs-theme=github" to ""
+                "source-highlighter" to "highlight.js",
+                "highlightjsdir" to "js/highlight",
+                "highlightjs-theme" to "github"
         )
     }
 }

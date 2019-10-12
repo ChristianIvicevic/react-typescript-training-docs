@@ -1,0 +1,54 @@
+[[about-the-training]]
+= About the Training
+include::attributes.adoc[]
+
+== Introduction
+You have been hired to build a frontend based on cutting edge technology for the Rusty Lobster.
+So far, the backend developers have already created a fully-documented REST API which is at your disposal.
+In particular, you will develop a burger configurator that allows visitors of the site to create custom burgers and save them.
+Furtheremore they shall be able to browse other burgers created by other customers.
+Stories and tasks will be available in a backlog that you will have to work on with your new team.
+
+The twist is the methodology with which you will be working during this training.
+It is meant to be a collaborative hands-on experience using mob programming wherein the entire team works on the same codebase at the same time at the same computer.
+Think of pair programming on steroids.
+
+Over the course of the training you will explore various important topics and concepts such as the following:
+
+* Basics of Typescript
+* Stateless Functional Components
+* Stateful Legacy Class Components
+* Hooks
+* Stateful Functional Components using Hooks
+* Fetching REST APIs
+* Routing
+* User Authentication using JWT
+* State Management using the React Context API
+* Testing with Jest and the React Testing Library
+
+[[about-the-training-requirements]]
+== Requirements
+For the training itself we require you to be familiar with the following topics:
+
+* Working with yarn or npm in the Javascript ecosystem
+* Intermediate knowledge of some of the following ES6 and ES2015 language features
+** {mdn-reference}/Functions/Arrow_functions[Arrow Functions]
+** {mdn-reference}/Functions/rest_parameters[Rest Parameters]
+** {mdn-reference}/Operators/Spread_syntax[Spread Syntax]
+** {mdn-reference}/Template_literals[String Interpolation]
+** {mdn-reference}/Operators/Object_initializer#New_notations_in_ECMAScript_2015[Property Shorthand]
+** {mdn-reference}/Operators/Destructuring_assignment[Destructuring]
+** {mdn-reference}/statements/export[Export]
+** {mdn-reference}/Statements/import[Import]
+** {mdn-reference}/Classes[Classes]
+** {mdn-reference}/Global_Objects/Promise[Promises]
+** {mdn-reference}/Statements/async_function[Asynchronous programming using `async`]
+** https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await[``await``ing results of ``async`` functions and Promises]
+
+[[about-the-training-training-material]]
+== Training material
+You are currently browsing the documentation that we have designed for the training.
+It is intended as your first introduction into the topics and terminology as well as being the reference document during the training itself.
+Before attending the training we expect you to read through all the sections of this documentation.
+Try to understand the most important topics and note any questions that come up during your preparation.
+Please take your time to ask us these questions prior to attending the training.

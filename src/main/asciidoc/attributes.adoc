@@ -6,7 +6,11 @@
 :tabsize: 4
 :numbered:
 :sectanchors:
-:sectnums:
+:!sectnums:
 :icons: font
 :hide-uri-scheme:
 :docinfo: shared,private
+:xrefstyle: short
+
+:docs-repo-issues: https://github.com/ChristianIvicevic/react-typescript-bootcamp-docs/issues
+:mdn-reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference
