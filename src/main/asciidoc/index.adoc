@@ -1,0 +1,6 @@
+include::attributes.adoc[]
+[[react-typescript-bootcamp-documentation]]
+= Mob Training: React / Typescript
+Christian Ivicevic <https://github.com/ChristianIvicevic[@ChristianIvicevic]>
+
+NOTE: This is a work-in-progress.

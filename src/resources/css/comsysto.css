@@ -1,0 +1,28 @@
+::selection {
+  background-color: highlight;
+}
+
+#header-spring {
+  border-top-color: #45a2ce;
+}
+
+#header-spring h1 svg {
+  height: 40px;
+  margin-left: -30px;
+}
+
+@media only screen and (min-width: 768px) {
+  #tocbot .is-active-link {
+    border-right-color: #45a2ce;
+  }
+}
+
+.conum[data-value] {
+  color: white !important;
+  background-color: rgba(0, 0, 0, .8);
+}
+
+pre .conum[data-value] {
+  color: white !important;
+  background-color: rgba(0, 0, 0, .8);
+}

@@ -1,0 +1,14 @@
+{
+    "name": "react-typescript-bootcamp-docs",
+    "description": "This project contains the documentation for the React/Typescript bootcamp",
+    "version": "1.0.0-SNAPSHOT",
+    "private": true,
+    "scripts": {
+        "build": "./gradlew asciidoctor",
+        "deploy:prod": "yarn build && netlify deploy --prod",
+        "deploy:staging": "yarn build && netlify deploy"
+    },
+    "devDependencies": {
+        "netlify-cli": "^2.17.0"
+    }
+}
