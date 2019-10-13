@@ -1,0 +1,38 @@
+{
+    "Typescript Source Block": {
+        "scope": "asciidoc",
+        "prefix": "ts",
+        "body": ["[source,typescript]", "----", "$0", "----"],
+        "description": "Creates a new Typescript source block in Asciidoc files"
+    },
+    "Note Admonition": {
+        "scope": "asciidoc",
+        "prefix": "adm_note",
+        "body": ["[NOTE]", "====", "$0", "===="],
+        "description": "Offer additional information that the reader may find helpful but that is not crucial to the content."
+    },
+    "Important Admonition": {
+        "scope": "asciidoc",
+        "prefix": "adm_important",
+        "body": ["[IMPORTANT]", "====", "$0", "===="],
+        "description": "Call out things that the reader really should know when working with the content."
+    },
+    "Tip Admonition": {
+        "scope": "asciidoc",
+        "prefix": "adm_tip",
+        "body": ["[TIP]", "====", "$0", "===="],
+        "description": "Offer shortcuts or other details that make things easier or faster for the reader."
+    },
+    "Caution Admonition": {
+        "scope": "asciidoc",
+        "prefix": "adm_caution",
+        "body": ["[CAUTION]", "====", "$0", "===="],
+        "description": "Let readers know of common errors or other issues that may slow their work or send them down an unproductive path."
+    },
+    "Warning Admonition": {
+        "scope": "asciidoc",
+        "prefix": "adm_warning",
+        "body": ["[WARNING]", "====", "$0", "===="],
+        "description": "Let readers know of risks or other issues that may cause severe problems, most notably data loss (including loss of information from databases, file systems, and version control systems)."
+    }
+}

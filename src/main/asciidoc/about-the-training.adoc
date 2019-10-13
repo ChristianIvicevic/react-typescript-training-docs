@@ -1,4 +1,4 @@
-[[about-the-training]]
+[[top]]
 = About the Training
 include::attributes.adoc[]
 
@@ -26,7 +26,7 @@ Over the course of the training you will explore various important topics and co
 * State Management using the React Context API
 * Testing with Jest and the React Testing Library
 
-[[about-the-training-requirements]]
+[[requirements]]
 == Requirements
 For the training itself we require you to be familiar with the following topics:
 
@@ -45,7 +45,7 @@ For the training itself we require you to be familiar with the following topics:
 ** {mdn-reference}/Statements/async_function[Asynchronous programming using `async`]
 ** https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await[``await``ing results of ``async`` functions and Promises]
 
-[[about-the-training-training-material]]
+[[training-material]]
 == Training material
 You are currently browsing the documentation that we have designed for the training.
 It is intended as your first introduction into the topics and terminology as well as being the reference document during the training itself.

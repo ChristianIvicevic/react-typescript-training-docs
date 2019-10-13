@@ -27,8 +27,8 @@ We also encourage you to ask questions and discuss any aspects of the project.
 The training material consists of the following sections:
 
 [horizontal]
-<<about-the-training.adoc#about-the-training,About the Training>> :: General information about the training itself including the scope, requirements and details on the training material.
-<<basics-of-typescript.adoc#basics-of-typescript,Basics of Typescript>> :: Introduction to the basics of the Typescript programming language, advantages of Typescript over Javascript and the basic data types
+<<about-the-training.adoc#,About the Training>> :: General information about the training itself including the scope, requirements and details on the training material.
+<<basics-of-typescript.adoc#,Basics of Typescript>> :: Introduction to the basics of the Typescript programming language, advantages of Typescript over Javascript and the basic data types
 
 // The training material consists of the following appendices:
 

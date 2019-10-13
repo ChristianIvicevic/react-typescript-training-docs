@@ -1,4 +1,4 @@
-[[basics-of-typescript]]
+[[top]]
 = Basics of Typescript
 include::attributes.adoc[]
 :imagesdir: ./images/basics-of-typescript/
@@ -95,7 +95,7 @@ image::type-inference.png[]
 == Basic Types
 Typescript is aware of the usual Javascript data types `boolean`, `number` and `string`, but it allows for more complex types.
 
-[[basic-types-arrays]]
+[[arrays]]
 === Arrays
 Typescript allows you to work with arrays that are defined like in most other programming languages as follows:
 
@@ -284,6 +284,519 @@ This reverse lookup does not work for enums with string values.
 [WARNING]
 ====
 Be careful when working with enums, especially when serializing their values to a storage like a database.
-By adding or removing new enum values previously stored values might no longer align with the names and values defined in your code.
+By adding or removing new enum values previously stored values might no longer align with the names and values defined in your code!
 In order to prevent anomalies you should always explicitly assign values to enum items and write tests that assert these values stay the same and/or are in the same order.
 ====
+
+[[constant-enums]]
+=== Constant Enums
+When compiling enums a lot of code is internally created to allow reverse lookups which might not be necessary most of the time.
+You can optimize this by enabling so-called type erasure for enums by making them constant and inlining their values.
+This means no traces of the actual enumeration will be in the generated code which transforms the following snippet
+
+[source,typescript]
+----
+const enum Colors {
+    Red,
+    Black,
+    Green,
+    White,
+}
+
+const colors = [Colors.Red, Colors.Black, Colors.Green, Colors.White];
+----
+
+into this terse definition
+
+[source,typescript]
+----
+var colors = [0, 1, 2, 3];
+----
+
+instead of
+
+[source,typescript]
+----
+"use strict";
+var Colors;
+(function (Colors) {
+    Colors[Colors["Red"] = 0] = "Red";
+    Colors[Colors["Black"] = 1] = "Black";
+    Colors[Colors["Green"] = 2] = "Green";
+    Colors[Colors["White"] = 3] = "White";
+})(Colors || (Colors = {}));
+const colors = [Colors.Red, Colors.Black, Colors.Green, Colors.White];
+----
+
+which reduces bundle size significantly.
+
+[[any]]
+=== Any
+When using 3rd party libraries or working with dynamic data that you can't explicitly type you can opt-out of type checking entirely by using the `any` type which drops you into the Wild West seizing all rules on a lawless frontier:
+
+[source,typescript]
+----
+let anyVariable: any = 42;
+anyVariable = "this can be a string as well";
+anyVariable = false;
+
+anyVariable.will.cause.a.runtimeError();
+
+let anyList: any[] = [42, "variable", false];
+anyList[1] = 314;
+----
+
+Nevertheless, `any` can be useful to opt-out of type checking in legacy code that you are about to migrate piece by piece from Javascript to Typescript.
+
+[CAUTION]
+====
+The `any` type should be used only when you definitely need it.
+You don't only lose type checking capabilities for anything annotated with `any`, you will even lose code completion capabilities of those elements.
+Furthermore using `any` can cause errors that could've been caught during compile time to happen during runtime.
+Be careful when relying on this type.
+====
+
+[[unknown]]
+=== Unknown
+Typescript has introduced the `unknown` type as a type-safe and strict alternative to `any`.
+You've seen that you can assign virtually ``any``thing (duh.) to a variable annotated with `any`.
+Since you opt-out of type checking using the following snippet will compile, but will throw errors during runtime:
+
+[source,typescript]
+----
+let variable: any = 42;
+variable = "string";
+variable = false;
+
+const value1 = variable.call.some.method.thatDoesntExist();
+const value2 = variable[3];
+const value3 = new variable();
+----
+
+In order to prevent those erroneous calls and assignments allowed by `any` you can leverage `unknown`.
+It allows assigning `any` value to it, but unlike `any` you can only assign an `unknown` variable to `any` or `unknown`, i.e. assigning an `unknown` to `boolean` or `number` will fail.
+Furthermore no attempted method calls or property access are allowed at all.
+
+[source,typescript]
+----
+let variable: unknown = 42;
+variable = "string";
+variable = false;
+
+const value1 = variable.call.some.method.thatDoesntExist();
+//             ~~~~~~~~ <1>
+const value2 = variable[3];
+//             ~~~~~~~~ <2>
+const value3 = new variable();
+//                 ~~~~~~~~ <3>
+
+const anyVariable: any = variable;
+const unknownVariable: unknown = variable;
+const boolVariable: boolean = variable;
+//    ~~~~~~~~~~~~ <4>
+----
+<1> `error: Object is of type 'unknown'.`
+<2> `error: Object is of type 'unknown'.`
+<3> `error: Object is of type 'unknown'.`
+<4> `error: Type 'unknown' is not assignable to type 'boolean'.`
+
+[IMPORTANT]
+====
+An `unknown` variable should only be used to read and write unknown data and nothing else.
+====
+
+[[null-and-undefined]]
+=== Null and Undefined
+Typescript distinguishes between variables defined as `null` or actually being `undefined`.
+Variables eplicitly have to be assigned `null` in order to describe that there is no data.
+`undefined` however is the value of variables that haven't been defined at all or explicitly being assigned `undefined`.
+Colloquially `undefined` is equivalent to an optional value that might not have to be set (yet).
+
+What's awesome about Typescript is, that it is able to deduce whether a variable is defined in the current scope when you try to access it:
+
+[source,typescript]
+----
+const someObjectThatMightBeUndefined = /* ... */; // <1>
+
+const value1 = someObjectThatMightBeUndefined.getValue();
+//             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <2>
+
+if (someObjectThatMightBeUndefined !== undefined) {
+    const value2 = someObjectThatMightBeUndefined.getValue(); // <3>
+}
+----
+<1> Without explicitly denoting the type of this variable, assume that it might be `undefined`.
+<2> `error: Object is possibly 'undefined'.`
+<3> This works just fine, since Typescript knows the object definitely isn't `undefined` in this scope and we even get code completion when attempting to call `getValue`.
+
+[NOTE]
+====
+In the official coding guidelines of the Typescript and VS Code team `null` is forbidden entirely and they enforce to use `undefined` only.
+This reduces possible errors and confusion between the two types and their interpretation in business logic.
+====
+
+[[never]]
+=== Never
+
+[IMPORTANT]
+====
+The following section about `never` is extremely abstract, but we didn't want to skip listing `never` as a basic type.
+Usually you should almost never (duh.) have to deal with this type unless something is really too complex for the compiler to resolve, like `Array.reduce` starting on an empty untyped array.
+====
+
+Values of type `never` should, as the name implies, never occur at all.
+This is the case for methods that throw errors since those methods won't return an actual value along this path (not even `undefined`).
+They technically return "something" of type `never` which indicates an unreachable end point.
+
+Furthermore in some edge cases where Typescript isn't able to infer types from usage, it will default to `never` for safety.
+Using the `Array.reduce` method on an empty array as the initial value will cause Typescript to bail on the following snippet:
+
+[source,typescript]
+----
+const neverArray = [1, 2, 3].reduce((acc, next) => acc, []);
+//                                                      ~~ <1>
+----
+<1> This array is considered to be of type `never[]` as Typescript cannot safely deduce its type.
+This prevents you to do virtually anything to it as Typescript wouldn't otherwise be able to check whether your operations are safe.
+
+From the usage of the second argument `[]` it is unclear of which type it is, not even `any[]` which would allow possibly undefined operations such as `acc.thisWillFail()`.
+The type `never[]` is considered to be an array that must be empty at all times.
+Surprisingly enough, even `unknown[]` would be semantically wrong as it is unclear which types are allowed to be pushed onto the array.
+Therefore `[]` is by default of type `never[]` and thus is `neverArray` since our snippet basically returns the initial value.
+
+Even the following snippet that actually tries to work with the accumulator value will fail:
+
+[source,typescript]
+----
+const array = [1, 2, 3].reduce((acc, next) => [...acc, next], []);
+//                                            ~~~~~~~~~~~~~~ <1>
+----
+<1> `error: Type 'number' is not assignable to type 'never'.`
+
+Attempting to append a `number` to a `never[]` which isn't posible will fail since `never` is incompatible to all other types, even `any` and `never[]`.
+
+[NOTE]
+====
+At some point you will stumble upon the above issue with `Array.reduce` and it can be easily fixed by giving it a type hint using <<#generics,Generics>>:
+
+[source,typescript]
+----
+const array = [1, 2, 3].reduce<number[]>((acc, next) => [...acc, next], []);
+//                             ~~~~~~~~ <1>
+----
+<1> Type of the initial (and return) value, in our case making it an array of numbers.
+====
+
+[[advanced-types]]
+== Advanced Types
+Most of the intimidating magic in Typescript stems from the type system and writing custom types using a vast array of syntactical elements and helper types.
+We will be introducing (rather abstract) examples where we want to type complex objects.
+For even more advanced types please refer to the chapter <<advanced-typescript.adoc#,Advanced Typescript>>.
+
+[[type-aliases]]
+=== Type Aliases
+You can use type aliases to create a new name for a possibly complex type.
+This is useful if you are for example describing the attributes of an UI component and want to collapse them into a single type:
+
+[source,typescript]
+----
+type ComponentProperties = {
+    active: boolean;
+    alignText: Alignment;
+    className: string;
+    disabled: boolean;
+    // ...
+};
+----
+
+Type aliases can be used to rename various different types:
+
+[source,typescript]
+----
+type Props = ComponentProperties; // <1>
+type Action = () => void; // <2>
+type NumberPredicate = (value: number) => boolean; // <2>
+----
+<1> Component properties in React are usually called Props.
+<2> These are function signatures.
+
+[[intersection-types]]
+=== Intersection Types
+Often it is necessary to drop the object-oriented codestyle and work with injected attributes using mixins.
+In the context of functional programming this is related to higher-order functions or in the context of React previously known as working with higher-order components.
+
+Using such a mixin will yield an object that has been extended with further properties.
+One can design a function, that merges two objects of type `A` and `B` into one object of type `A & B` called their intersection.
+The types for the upcoming example are the following:
+
+[source,typescript]
+----
+type TypeA = {
+    stringVariableA: string;
+    numberVariableA: number;
+};
+
+type TypeB = {
+    booleanVariableB: boolean;
+    functionInB(): void;
+};
+----
+
+Defining their intersection is a one-liner
+
+[source,typescript]
+----
+type Intersection = TypeA & TypeB;
+----
+
+which is equivalent to this:
+
+[source,typescript]
+----
+type Intersection = {
+    stringVariableA: string;
+    numberVariableA: number;
+    booleanVariableB: boolean;
+    functionInB(): void;
+};
+----
+
+The function `merge` now has two parametes of types `TypeA` and `TypeB` and returns the intersection of type `TypeA & TypeB`:
+
+[source,typescript]
+----
+const merge = (objA: TypeA, objB: TypeB): TypeA & TypeB // <1>
+    => ({...objA, ...objB}); // <2>
+----
+<1> Alternatively `Intersection` instead of `TypeA & TypeB` from the previous snippets.
+<2> This spreads the two arguments `objA` and `objB` into a new object.
+
+[[union-types]]
+=== Union Types
+Another useful syntactic element are union types `A | B` of two types `A` and `B` used to describe an "either/inclusive or"-type (depending on context).
+Functions don't have to have parameters restricted to a single type, they can declare multiple types for a parameter:
+
+[source,typescript]
+----
+const unionMethod = (arg: number | string) => /* ... */; // <1>
+----
+<1> This method accepts either a `number` or a `string` and is internally implemented in a way that both types are handled correctly.
+
+A similar notion exists for variables that needs some intuition when working with them:
+
+[source,typescript]
+----
+class Human {
+    public speak() { /* ... */ }
+    public move() { /* ... */ }
+}
+
+class Insect {
+    public move() { /* ... */ }
+}
+
+const entity: Human | Insect = /* ... */;
+entity.move();
+entity.speak();
+//     ~~~~~ <1>
+----
+<1> &nbsp;
++
+----
+error: Property 'speak' does not exist on type 'Human | Insect'.
+  Property 'speak' does not exist on type 'Insect'.
+----
+
+When attempting to access members of the `entity` variable Typescript can certainly assume that it has the `move` method since it is contained in both `Human` and `Insect`.
+However trying to invoke `speak` might fail during runtime depending on the actual type of `entity` since there is no distinction between either types yet and Typescript will not allow the compilation of this unsafe snippet.
+
+[NOTE]
+====
+To actually distinguish between union types you have to use so-called <<advanced-typescript.adoc#type-guards,type guards>>.
+====
+
+Union types allow you to denote optional / possibly undefined variables as follows:
+
+[source,typescript]
+----
+type Props = {
+    requiredString: string;
+    optionalNumber: number | undefined;
+};
+----
+
+In fact Typescript provides the question mark operator `?` to remove the necessity of adding `| undefined` to all optional variables:
+
+[source,typescript]
+----
+type Props = {
+    requiredString: string;
+    optionalNumber?: number;
+};
+----
+
+[[generics]]
+=== Generics
+
+[[basics-of-generics]]
+==== Basics of Generics
+It can happen that you end up with a type, method or class that you can apply similar in the context of various types.
+A rather artificial example is the following:
+
+[source,typescript]
+----
+const numberToString = (arg: number) => `${arg}`;
+const booleanToString = (arg: boolean) => `${arg}`;
+const dateToString = (arg: Date) => `${arg}`;
+----
+
+You'll notice that the only difference is the annotated type so you can use a union type to combine all allowed types:
+
+[source,typescript]
+----
+const toString = (arg: number | boolean | Date) => `${arg}`;
+----
+
+This can end up being quite convoluted when you support many types and just want a generic method for virtually all types.
+Thus generics have been borrowed from other programming languages that are placeholders for types:
+
+[source,typescript]
+----
+const toString = <ArgType>(arg: ArgType) => `${arg}`; // <1>
+----
+<1> This method now has a new special type parameter called `ArgTyp` enclosed by angle brackets.
+It behaves like a placeholder where each occurence of it would be replaced by the supplied type.
+Writing `toString<number>(...)` indicates that `arg` is of type `number` etc.
+
+Now it ispossible to invoke this method as follows:
+
+[source,typescript]
+----
+const string1 = toString<number>(42);
+const string2 = toString<boolean>(false);
+const string3 = toString<number>("string");
+//                               ~~~~~~~~ <1>
+const string4 = toString(42);
+//                       ~~ <2>
+----
+<1> `error: Argument of type '"string"' is not assignable to parameter of type 'number'.`
+<2> Often there is no need to explicitly write generic types for invocations since Typescript can infer them from the usage.
+Here 42 is a number, thus this line is treated as `toString<number>(42)`.
+
+Generics exist for classes and other types as well.
+It is possible to define a special type that makes each type `T` optional by mapping it onto `T | undefined`:
+
+[source,typescript]
+----
+type Maybe<T> = T | undefined;
+----
+
+Example usages are as follows:
+
+[source,typescript]
+----
+// This type alias...
+type Simple = Maybe<number>;
+// ...is equivalent to this manually written type.
+type Simple = number | undefined;
+
+// This type alias...
+type ResponseCode = Maybe<{ value: number; }>;
+// ...is equivalent to this manually written type.
+type ResponseCode = { value: number; } | undefined;
+----
+
+Generics enable you to write generic predicates which take any argument and return a boolean value.
+Such a predicate is usually used for conditions to check in methods such as `Array.filter` or `Array.some`:
+
+[source,typescript]
+----
+type Predicate<T> = (arg: T) => boolean; // <1>
+
+const isThirteen: Predicate<number> = (arg) => arg === 13; // <2>
+//                                     ~~~ <3>
+
+const array = [1, 2, 13, 4, 13, 5];
+const thirteens = array.filter(isThirteen);
+const containsThirteen = array.some(isThirteen);
+----
+<1> This type describes a function that maps any type onto a boolean.
+<2> We define this method to be a predicate operating on numbers.
+<3> Notice how we are not explicitly writing `arg: number`.
+This is already implied by the definition of `Predicate` because `arg` must be a number.
+
+[[constraints]]
+==== Constraints and Defaults
+
+[WARNING]
+====
+TODO: This is a placeholder for content that hasn't been written yet.
+====
+
+[[showcase-generics-in-legacy-react-class-components]]
+==== Showcase: Generics in Legacy React Class Components
+Let's have a look at a sophisticated example of generics: the use in legacy class components of React.
+A simplified base class for components is this one:
+
+[source,typescript]
+----
+abstract class Component<Props, State> { // <1>
+    public readonly props: Props; // <2>
+    protected readonly state: State; // <3>
+
+    /* ... */
+
+    public setState(newState: State) { // <4> <5>
+        /* ... */
+    }
+}
+----
+<1> Our `Component` class expects two generic type arguments `Props` and `State` that can be used to describe the type of the internal props and state.
+<2> The internal props passed on to a component have the type `Props`.
+<3> The internal state of the component has the type `State`.
+<4> Internally the actual `Component.setState` function in React is more complex, we have simplified this example intentionally.
+<5> This method expects a `newState` object that must be compatible with the internal state which is made sure using the `State` type annotation.
+
+A custom component can extend the base `Component` class and pass on its prop and state types:
+
+[source,typescript jsx]
+----
+type ButtonProps = {
+    className: string;
+    text: string;
+};
+
+type ButtonState = {
+    isActive: boolean;
+};
+
+class Button extends Component<ButtonProps, ButtonState> { // <1>
+    public void render() { // <2>
+        return (
+            <button // <3>
+                className={`btn btn--is-${this.state.isActive ? "active" : "inactive"} ${this.props.className}`} // <4>
+                onClick={this.onClick}  // <5>
+            >
+                {this.props.text} // <6>
+            </button>
+        );
+    }
+
+    // Our custom event handler for the onClick event which is wired up in the render method above.
+    private readonly onClick = () => {
+        // We have access to the setState method of the parent class and can set the state variable.
+        this.setState({ isActive: true, doesNotExist: 13 });
+        //                              ~~~~~~~~~~~~
+        // error: Property 'doesNotExist' does not exist on type 'ButtonState'.
+    };
+
+    // ...
+}
+----
+<1> We define our `Button` component and pass on our custom `ButtonProps` and `ButtonState` types to be passed to the parent class to be used as types for the internal `props` and `state` object.
+<2> The `render` method in React returns the actual component to be rendered using a special HTML-like syntax called JSX.
+Don't worry if you're not familiar with this, just try to understand the way we can access the correct `props` and `state` variables.
+<3> We return a standard button HTML element.
+<4> The button has the class name defined in the `className` prop and depending on the value of the `isActive` state variable either `btn--is-active` or `btn--is-inactive` as an additional class name.
+<5> Furthermore we bind a custom method to handle the `onClick` event.
+<6> The button displays the text supplied via the `text` prop.
