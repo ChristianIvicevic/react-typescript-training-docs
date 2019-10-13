@@ -62,10 +62,10 @@ tasks {
                 "stylesdir" to "css/",
                 "stylesheet" to "spring.css",
                 "linkcss" to true,
-                "icons" to "font",
-                "source-highlighter" to "highlight.js",
-                "highlightjsdir" to "js/highlight",
-                "highlightjs-theme" to "github"
+                "icons" to "font"
+                // "source-highlighter" to "highlight.js",
+                // "highlightjsdir" to "js/highlight",
+                // "highlightjs-theme" to "github"
         )
     }
 }

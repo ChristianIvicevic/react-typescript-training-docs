@@ -565,7 +565,7 @@ The function `merge` now has two parametes of types `TypeA` and `TypeB` and retu
 
 [source,typescript]
 ----
-const merge = (objA: TypeA, objB: TypeB): TypeA & TypeB // <1>
+const merge = (objA: TypeA, objB: TypeB): (TypeA & TypeB) // <1>
     => ({...objA, ...objB}); // <2>
 ----
 <1> Alternatively `Intersection` instead of `TypeA & TypeB` from the previous snippets.
@@ -782,12 +782,9 @@ class Button extends Component<ButtonProps, ButtonState> { // <1>
         );
     }
 
-    // Our custom event handler for the onClick event which is wired up in the render method above.
-    private readonly onClick = () => {
-        // We have access to the setState method of the parent class and can set the state variable.
-        this.setState({ isActive: true, doesNotExist: 13 });
-        //                              ~~~~~~~~~~~~
-        // error: Property 'doesNotExist' does not exist on type 'ButtonState'.
+    private readonly onClick = () => { // <7>
+        this.setState({ isActive: true, doesNotExist: 13 }); // <8>
+        //                              ~~~~~~~~~~~~ // <9>
     };
 
     // ...
@@ -800,3 +797,6 @@ Don't worry if you're not familiar with this, just try to understand the way we 
 <4> The button has the class name defined in the `className` prop and depending on the value of the `isActive` state variable either `btn--is-active` or `btn--is-inactive` as an additional class name.
 <5> Furthermore we bind a custom method to handle the `onClick` event.
 <6> The button displays the text supplied via the `text` prop.
+<7> Our custom event handler for the `onClick` event which is wired up in the `render` method above.
+<8> We have access to the `setState` method of the parent class and can attempt to set the `state` variable.
+<9> `error: Property 'doesNotExist' does not exist on type 'ButtonState'.`

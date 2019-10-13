@@ -22,6 +22,12 @@
     }
 }
 
+/* Hide (X) in code that was not ignored by Prism during highlighting */
+code b {
+    display: none;
+    visibility: hidden;
+}
+
 .conum[data-value] {
     color: white !important;
     background-color: rgba(0, 0, 0, 0.8);
@@ -30,4 +36,18 @@
 pre .conum[data-value] {
     color: white !important;
     background-color: rgba(0, 0, 0, 0.8);
+    text-shadow: none;
+}
+
+/* Enable top and bottom border and code overflow for Prism */
+.listingblock pre[class] {
+    padding: 0.2rem 0;
+    background-color: #f2f2f2;
+}
+
+.listingblock pre[class] code {
+    display: block;
+    overflow-x: auto;
+    padding: 1em 1.5rem;
+    background: #f8f8f8;
 }
