@@ -1,0 +1,415 @@
+[[top]]
+= Advanced Features of the Type System
+include::attributes.adoc[]
+:imagesdir: ./images/advanced-features-of-the-type-system/
+
+Over the course of this section we will introduce you to multiple advanced features of the type system and their use-cases.
+Please keep in mind that this section is more abstract than the introduction to Typescript and has a lot of theoretical content.
+You won't be working with all of these utilities right away when you use Typescript for the very first time, however over time you will find some, hopefully all, of them really helpful.
+
+[[type-guards]]
+== Type Guards
+Sometimes it is necessary to distinguish between multiple types in an union type `A | B` in order to access methods or properties safely.
+
+Assume a scenario wherein you are working with two entity types called `Client` and `Project` that have some properties in common, and some distinct to them:
+
+[source,typescript]
+----
+type Client = {
+    id: number;
+    name: string;
+    phoneNumber: string;
+};
+
+type Project = {
+    id: number;
+    name: string;
+    description: string;
+};
+----
+
+Via an API you are fetching a single entity that can be either a `Client` or a `Project`.
+Attempting to access properties that the respective types don't have in common will fail during compilation:
+
+[source,typescript]
+----
+const entity: Client | Project = /* ... */;
+
+const entityId = entity.id;
+const entityName = entity.name;
+const entityDescription = entity.description;
+//                               ~~~~~~~~~~~ <1>
+const entityPhoneNumber = entity.phoneNumber;
+//                               ~~~~~~~~~~~ <2>
+----
+<1> `error: Property 'description' does not exist on type 'Client | Project'. Property 'description' does not exist on type 'Client'.`
+<2> `error: Property 'phoneNumber' does not exist on type 'Client | Project'. Property 'phoneNumber' does not exist on type 'Project'.`
+
+Even though Typescript error messages can be daunting at times they are usually really helpful to figure out what's actually causing the error if you track the different causes for bigger errors in the hierarchy.
+In the previous example the first error message tells you, that you cannot safely access the `description` property of a `Client | Project` object because this property doesn't exist in the `Client` type in the first place.
+The second error message indicates the same error with respect to the `Project` type.
+
+In order to distinguish between types of such a union Typescript has introduced so-called type guards, methods that return a special boolean value indicating whether an object is of a specific type.
+This information is then used by the type system itself to check your code and attempts to call methods or access properties.
+A type guard might look as follows:
+
+[source,typescript]
+----
+const isProject = (entity: Client | Project): entity is Project => "description" in entity;
+----
+
+This is just a method that has a return type of the form `parameterName is Type` which is a special syntactical element called type predicate.
+It indicates that the value of it is important for the type system as well.
+The body evaluates to a boolean expression that should return a value indicating whether the claim `parameterName is Type` actually holds true.
+One of the most common use cases is to check whether a property exists in an object using the `"property" in object` notation.
+The type guard is used to distinguish between `Client` and `Project` since that latter contains a property `description` while the former does not.
+If the `entity` contains a property called `description` the type guard claims that `entity is Project`; otherwise, not.
+
+Using the type guard in the previous snippet it is possible to access the entity description safely:
+
+[source,typescript]
+----
+const entity: Client | Project = /* ... */; // <1>
+
+const entityId = entity.id; // <2>
+const entityName = entity.name; // <2>
+
+if (isProject(entity)) { // <3>
+    const entityDescription = entity.description; // <4>
+} else {
+    const entityPhoneNumber = entity.phoneNumber; // <5>
+}
+----
+<1> In this outer scope `entity` is definitely of type `Client | Project`.
+<2> Both types have `id` and `name` in common, thus the access is valid.
+<3> The type guard in combination with the `if`-clause introduces a new scope with the information that `entity is Project`.
+<4> In this scope Typescript "trusts" the `isProject` type guard claiming that `entity` is definitely a `Project` and so accessing `description` will no longer fail during compilation.
+<5> In this scope Typescript "trusts" the `isProject` type guard once again claiming that `entity` is definitely NOT a `Project`.
+Thus the only option left in the union is `Client` which actually allows to access properties specific to `Client` such as `phoneNumber`.
+
+[CAUTION]
+====
+Be aware that Typescript has narrowed down the type of `entity` in both scopes by "trusting" the type guard.
+Thus you might encounter runtime errors if your type guard has a bug, e.g. if you have a typo such as `"desrciption" in entity`.
+This predicate for the type guard is syntactically correct, but semantically not right.
+During runtime the type guard would always return false and thus it might be possible the code attempts to access `entity.phoneNumber` for `Project` entities causing a crash.
+====
+
+[NOTE]
+====
+When working with advanced technologies such as GraphQL in combination with discriminated unions it is common to compare values of metadata properties instead of checking the existence of them.
+GraphQL usually injects a `__typename` property into all models that can be used to deduce a type correctly.
+Type guards in combination with GraphQL often look as follows:
+
+[source,typescript]
+----
+const isProject = (entity: Client | Project): entity is Project => entity.__typename === "Project";
+----
+
+In this example the result of the type guard is relying on the `__typename` field introduced by GraphQL to infer the type of the entity.
+====
+
+To prevent possible bugs and typos for expressions of the for `propertyName in object` it is encouraged to use type-casts to enable type-checking while writing the type guard:
+
+[source,typescript]
+----
+const isProject = (entity: Client | Project): entity is Project => (entity as Project).description !== undefined;
+----
+
+The previous snippet attempts to type-cast `entity` into a `Project` (which actually only happens during compile time) in order to access members of `Project`, i.e. the `description` property.
+By checking whether `description` is in fact a member of `entity` (hence not `undefined`) it is deduced that `entity` must be a `Project`.
+This will prevent typos and fail during compilation if something isn't correct.
+
+[[literal-types]]
+== Literal Types
+
+In various scenarios enumerations are useful to declare a custom set of named constants and their respective values.
+However when consuming an API that yields such constants as raw strings, typing them as `string` might not sufficiently describe the business logic, thus it is necessary to use a different tool to narrow down the expected string values.
+
+Assume your API yields entities of different ``kind``s, i.e. `Client`, `Project` and `Factory` and the JSON response of a search request looks as follows:
+
+[source,json]
+----
+[
+    {
+        "kind": "Client",
+        /* ... */
+    },
+    {
+        "kind": "Client",
+        /* ... */
+    },
+    {
+        "kind": "Project",
+        /* ... */
+    },
+    {
+        "kind": "Factory",
+        /* ... */
+    }
+]
+----
+
+Currently the response is a heterogenous array that might be typed using the following type (assuming the types have a `kind` member in common):
+
+[source,typescript]
+----
+type SearchResponse = (Client | Project | Factory)[];
+----
+
+This is completely reasonable if the elements are vastly different from one another, but let's assume more about the response itself:
+
+[source,json]
+----
+[
+    {
+        "kind": "Client",
+        "score": 0.42,
+        "link": "/clients/1"
+    },
+    {
+        "kind": "Client",
+        "score": 0.12,
+        "link": "/clients/2"
+    },
+    {
+        "kind": "Project",
+        "score": 0.05,
+        "link": "/projects/3"
+    },
+    {
+        "kind": "Factory",
+        "score": 0.78,
+        "link": "/factory/4"
+    }
+]
+----
+
+A new version of `SearchResponse` might be the following:
+
+[source,typescript]
+----
+type SearchEntry = {
+    kind: string;
+    score: number;
+    link: string;
+};
+
+type SearchResponse = SearchEntry[];
+----
+
+Can you spot the semantical (not syntactical!) error?
+The `kind` property is a `string` which is rather error-prone to typos, e.g. `responseItem.kind === "Porject"` which isn't picked up by the compiler as being erroneous.
+It allows any string to be either assigned to or read from those properties.
+These are the subtle runtime errors that are difficult to debug and track down which can be caught during compilation using Typescript.
+Furthermore the type badly documents the underlying API as the API does not return just arbitrary strings for the `kind`.
+
+Using literal types you can define union types of strings, numerical and boolean constants and thus narrow down what can be assigned.
+Those literal types are just unions of constant values.
+The `SearchReponse` can be rewritten as follows:
+
+[source,typescript]
+----
+type SearchEntry = {
+    kind: "Client" | "Project" | "Factory";
+    score: number;
+    link: string;
+};
+
+type SearchResponse = SearchEntry[];
+----
+
+This new version will catch errors during compilation that were previously only noticed during runtime, if at all:
+
+[source,typescript]
+----
+const response: SearchResponse = /* ... */;
+
+response.forEach((searchEntry) => {
+    if (searchEntry.kind === "Porject") {
+    //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <1>
+    }
+    // ...
+});
+----
+<1> `error: This condition will always return 'false' since the types '"Client" | "Project" | "Factory"' and '"Porject"' have no overlap.`
+
+Literal types are allowed for strings, numerical values, booleans and any union of either of them:
+
+[source,typescript]
+----
+type Kind = "Client" | "Project" | "Factory";
+type Primes = 2 | 3 | 5 | 7 | 9;
+type Bool = true | false;
+
+type Options = {
+    mockOptions: true | SomeComplexObject; // <1>
+};
+----
+<1> In 3rd party libraries, especially in legacy JS projects, you'll stumble across options supplied to methods or constructors, that allow atomic values such as booleans (for default configurations) or more nuanced objects with further options.
+
+[TIP]
+====
+Use literal types over string based enums.
+Literal types are shorter, less redundant and better since reverse lookups do not work for enums with string values anyways.
+There is no value in using an enum over a literal type.
+
+[source,typescript]
+----
+// Enums likes this...
+const enum Kind {
+    Client = "Client",
+    Project = "Project",
+    Factory = "Factory",
+}
+// ...should be refactored to match this.
+type Kind = "Client" | "Project" | "Factory";
+----
+====
+
+[[index-types]]
+== Index Types
+For this section about index types we want to motivate how to write a method `pluck(object, propertyNames)` that takes an object and returns an array of all property values requested by their property names.
+It will behave like this:
+
+[source,typescript]
+----
+type Factory = {
+    id: number;
+    name: string;
+    description: string;
+    location: string;
+};
+
+const rainbowFactory: Factory = /* ... */;
+
+const idAndNameTuple = pluck(rainbowFactory, ["id", "name"]);
+// -> [1, "Rainbow Factory"]
+const nameAndLocationTuple = pluck(rainbowFactory, ["name", "location"]);
+// -> ["Rainbow Factory", "Whimsyshire"]
+const errorTuple = pluck(rainbowFactory, ["name", "something"]);
+//                                                ~~~~~~~~~~~ <1>
+----
+<1> `error: Type 'string' is not assignable to type '"id" | "name" | "description" | "location"'.`
+
+The goal is to leverage Typescript utilities to make `pluck` aware of the type of the supplied object and propose as well as check for property names.
+Frankly, the error message that Typescript provides can be misleading for beginners, but it denotes that there was an attempt to assign an arbitrary string to a literal type and it fails during compilation.
+In order to implement the method three utilities are necessary:
+
+* <<basics-of-typescript.adoc#generics,Generics>> and their type inference from usage
+* A utility to dynamically get all available properties of any given type in order to type check the elements in the property names array
+* Another utility to dynamically get the type of a property when requesting "the type of property `K` in type ``T``"
+
+[[index-query-type-operatory]]
+=== Index Type Query Operator
+In order to retrieve the properties of any given type, even generic types, you can use the index type query operator `keyof Type` to retrieve a literal string union of properties:
+
+[source,typescript]
+----
+// This index type query operator type...
+type KeysInFactory = keyof Factory;
+// ...is equivalent to this manually written type.
+type KeysInFactory = "id" | "name" | "description" | "location";
+----
+
+We can implement a signature for the `pluck` function by starting with the following:
+
+[source,typescript]
+----
+const pluck = <T>(obj: T, propertyNames: string[]): unknown[] => /* ... */;
+----
+
+As described in the section about <<basics-of-typescript.adoc#generics,generics>>, we can call `pluck` on any object and the respective type `T` will be infered automatically.
+Thus, in our initial snippet we were able to write `pluck(rainbowFactory, ...)` instead of `pluck<Factory>(rainbowFactory, ...)` since Typescript will figure out that `rainbowFactory` is of type `Factory` and therefore deduce that `T = Factory`.
+However the property names are still of type `string[]` which doesn't allow for type-checking.
+At this point we can integrate the new operator and replace `string` with `keyof T`:
+
+[source,typescript]
+----
+const pluck = <T>(obj: T, propertyNames: (keyof T)[]): unknown[] => /* ... */;
+----
+
+Doing so will already enable code completion for available property names in the object type:
+
+.The `pluck` method already provides code completion for available properties on the dynamic object
+[#img-pluck]
+image::pluck.png[]
+
+Nevertheless both the return type and body are still missing.
+Let's take a look at the operator we will use to describe the return type.
+
+[[indexex-access-operatory]]
+=== Indexed Access Oeprator
+Previously we claimed that we need a utility to dynamically retrieve types of properties such as "the type of property `K` in type ``T``".
+For a statically named property you can access any type as if it were an array (with automatic code completion and type-checking) using array brackets and a literal union of keys as the index:
+
+[source,typescript]
+----
+// This indexed access operator type...
+type FactoryIdType = Factory["id"];
+// ...is equivalent to this manually written type.
+type FactoryIdType = number;
+----
+
+Selecting multiple keys using a literal union will return their respective union type:
+
+[source,typescript]
+----
+// This indexed access operator type...
+type FactoryIdAndNameType = Factory["id" | "name"];
+// ...is equivalent to this manually written type.
+type FactoryIdAndNameType = number | string;
+----
+
+Static access to types is rarely used, but in scenarios wherein the keys and/or root type is dynamic the indexed access operator `T[K]` introduced right now will come in handy.
+Our `pluck` function once more can be adapted, so we no longer return `unknown[]`, but `T[keyof T][]` which is arguably still hard to read (and understand), but we'll improve on that:
+
+[source,typescript]
+----
+const pluck = <T>(obj: T, propertyNames: (keyof T)[]): T[keyof T][] => /* ... */;
+----
+
+Our current claim is that the return type is a heterogenous array that consists of a subset of types in `T`.
+In this subset included are all property types in `T` (not the properties itself), since the expression `T[keyof T]` evaluates to `T["id" | "name" | "description" | "location"]` which is basically `number | string`.
+This is not only hard to read, but describes a wrong business logic!
+Even though we might call `pluck(someFactory, ["id"])` which clearly returns only a `number[]` of length 1, the method still considers all keys and claims to return `(number | string)[]`.
+Let's fix those issues.
+
+We can introduce a new generic argument `K` that is a subset of `keyof T` which can be denoted using the `K extends keyof T` constraint notation.
+The actual type of `K` shall be deduced from the `propertyNames` array itself, i.e. `["id", "name"]` would imply `K = "id" | "number"` and `["id"]` would imply `K = "id"` which allows us to properly narrow down the return type.
+Instead of using `T[keyof T]` we can pick only the selected keys using `T[K]`.
+Yet another new version of `pluck` will look like this:
+
+[source,typescript]
+----
+const pluck = <T, K extends keyof T>(obj: T, propertyNames: K[]): T[K][] => /* ... */;
+----
+
+To explain once more:
+`propertyNames` is now an array of keys in `T` which is picked up by the type system under the name of `K`.
+In the new version `K` consists only of the supplied keys in `propertyNames` and no longer all keys in `T`.
+Finally our return type is a heterogenous array of the union of all picked keys.
+Eventually the final function may look as follows:
+
+[source,typescript]
+----
+const pluck = <T, K extends keyof T>(obj: T, propertyNames: K[]): T[K][] => propertyNames.map(key => obj[key]);
+----
+
+This method virtually maps all literal keys onto their values in the object and we're finally done.
+
+[[mapped-types]]
+== Mapped Types
+
+[WARNING]
+====
+TODO: This is a placeholder for content that hasn't been written yet.
+====
+
+[[conditional-types]]
+== Conditional Types
+
+[WARNING]
+====
+TODO: This is a placeholder for content that hasn't been written yet.
+====

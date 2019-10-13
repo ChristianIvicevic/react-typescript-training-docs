@@ -477,7 +477,7 @@ Attempting to append a `number` to a `never[]` which isn't posible will fail sin
 
 [NOTE]
 ====
-At some point you will stumble upon the above issue with `Array.reduce` and it can be easily fixed by giving it a type hint using <<#generics,Generics>>:
+At some point you will stumble upon the above issue with `Array.reduce` and it can be easily fixed by giving it a type hint using <<#generics,generics>>:
 
 [source,typescript]
 ----
@@ -491,7 +491,7 @@ const array = [1, 2, 3].reduce<number[]>((acc, next) => [...acc, next], []);
 == Advanced Types
 Most of the intimidating magic in Typescript stems from the type system and writing custom types using a vast array of syntactical elements and helper types.
 We will be introducing (rather abstract) examples where we want to type complex objects.
-For even more advanced types please refer to the chapter <<advanced-typescript.adoc#,Advanced Typescript>>.
+For even more advanced types please refer to the chapter <<advanced-features-of-the-type-system.adoc#,Advanced Features of the Type System>>.
 
 [[type-aliases]]
 === Type Aliases
@@ -607,7 +607,7 @@ However trying to invoke `speak` might fail during runtime depending on the actu
 
 [NOTE]
 ====
-To actually distinguish between union types you have to use so-called <<advanced-typescript.adoc#type-guards,type guards>>.
+To actually distinguish between union types you have to use so-called <<advanced-features-of-the-type-system.adoc#type-guards,type guards>>.
 ====
 
 Union types allow you to denote optional / possibly undefined variables as follows:

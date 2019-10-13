@@ -1,0 +1,25 @@
+[[top]]
+= Utility Types
+include::attributes.adoc[]
+
+[WARNING]
+====
+TODO: This is a placeholder for content that hasn't been written yet.
+====
+
+== `Record<K, V>`
+== `Partial<T>`
+== `PartialDeep<T>`
+== `Required<T>`
+== `Readonly<T>`
+== `ReadonlyDeep<T>`
+== `Pick<T, K>`
+== `Omit<T, K>`
+== `Except<T, K>`
+== `Exclude<T, U>`
+== `Extract<T, U>`
+== `NonNullable<T>`
+== `NonNullableDeep<T>`
+== `Parameters<T>`
+== `ReturnType<T>`
+== `LiteralUnion<T>`

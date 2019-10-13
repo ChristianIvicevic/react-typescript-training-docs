@@ -28,8 +28,10 @@ The training material consists of the following sections:
 
 [horizontal]
 <<about-the-training.adoc#,About the Training>> :: General information about the training itself including the scope, requirements and details on the training material.
-<<basics-of-typescript.adoc#,Basics of Typescript>> :: Introduction to the basics of the Typescript programming language, advantages of Typescript over Javascript and the basic data types
+<<basics-of-typescript.adoc#,Basics of Typescript>> :: Introduction to the basics of the Typescript programming language, advantages of Typescript over Javascript and the basic data types and their compositions.
+<<advanced-features-of-the-type-system.adoc#,Advanced Features of the Type System>> :: This section summarizes more advanced topics of the Typescript type system and presents powerful types and their use-cases.
 
-// The training material consists of the following appendices:
+The training material consists of the following appendices:
 
-// [horizontal]
+[horizontal]
+<<appendix-utility-types.adoc#,Utility Types>> :: Frequently used utility types that are mostly part of the official Typescript compiler.
