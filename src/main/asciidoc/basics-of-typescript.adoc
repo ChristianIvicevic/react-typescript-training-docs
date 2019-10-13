@@ -600,12 +600,7 @@ entity.move();
 entity.speak();
 //     ~~~~~ <1>
 ----
-<1> &nbsp;
-+
-----
-error: Property 'speak' does not exist on type 'Human | Insect'.
-  Property 'speak' does not exist on type 'Insect'.
-----
+<1> `error: Property 'speak' does not exist on type 'Human | Insect'. Property 'speak' does not exist on type 'Insect'.`
 
 When attempting to access members of the `entity` variable Typescript can certainly assume that it has the `move` method since it is contained in both `Human` and `Insect`.
 However trying to invoke `speak` might fail during runtime depending on the actual type of `entity` since there is no distinction between either types yet and Typescript will not allow the compilation of this unsafe snippet.
