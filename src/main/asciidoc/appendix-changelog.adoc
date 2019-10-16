@@ -1,0 +1,28 @@
+[[top]]
+= Changelog
+include::attributes.adoc[]
+
+All notable changes to this project will be documented on this page.
+
+// == Date
+//
+// === Added
+// === Changed
+// === Deprecated
+// === Removed
+// === Fixed
+// === Security
+
+// == Unreleased
+
+== v0.1.0 - 2019-10-16
+
+=== Added
+* Changelog page.
+
+=== Changed
+* Editor screenshots to use a light theme to be more pleasant to watch.
+* The table of contents so it expands right away no longer hiding certain sections.
+
+=== Fixed
+* A misspelling of the word "operator" in the section about the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>>.

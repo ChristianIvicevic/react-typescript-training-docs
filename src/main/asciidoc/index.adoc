@@ -35,3 +35,4 @@ The training material consists of the following appendices:
 
 [horizontal]
 <<appendix-utility-types.adoc#,Utility Types>> :: Frequently used utility types that are mostly part of the official Typescript compiler.
+<<appendix-changelog.adoc#,Changelog>> :: All notable changes to this project will be documented on this page.

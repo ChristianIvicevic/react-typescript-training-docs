@@ -1,7 +1,7 @@
 {
     "name": "react-typescript-bootcamp-docs",
-    "description": "This project contains the documentation for the React/Typescript bootcamp",
-    "version": "1.0.0-SNAPSHOT",
+    "description": "This project contains the documentation for the Comsysto React / Typescript training",
+    "version": "0.1.0-SNAPSHOT",
     "private": true,
     "scripts": {
         "build": "./gradlew asciidoctor",
