@@ -300,7 +300,7 @@ In order to implement the method three utilities are necessary:
 * A utility to dynamically get all available properties of any given type in order to type check the elements in the property names array
 * Another utility to dynamically get the type of a property when requesting "the type of property `K` in type ``T``"
 
-[[index-query-type-operatory]]
+[[index-query-type-operator]]
 === Index Type Query Operator
 In order to retrieve the properties of any given type, even generic types, you can use the index type query operator `keyof Type` to retrieve a literal string union of properties:
 
@@ -338,8 +338,8 @@ image::pluck.png[]
 Nevertheless both the return type and body are still missing.
 Let's take a look at the operator we will use to describe the return type.
 
-[[indexex-access-operatory]]
-=== Indexed Access Oeprator
+[[indexed-access-operator]]
+=== Indexed Access Operator
 Previously we claimed that we need a utility to dynamically retrieve types of properties such as "the type of property `K` in type ``T``".
 For a statically named property you can access any type as if it were an array (with automatic code completion and type-checking) using array brackets and a literal union of keys as the index:
 
