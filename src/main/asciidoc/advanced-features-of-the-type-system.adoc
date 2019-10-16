@@ -90,7 +90,7 @@ Thus the only option left in the union is `Client` which actually allows to acce
 [CAUTION]
 ====
 Be aware that Typescript has narrowed down the type of `entity` in both scopes by "trusting" the type guard.
-Thus you might encounter runtime errors if your type guard has a bug, e.g. if you have a typo such as `"desrciption" in entity`.
+Thus you might encounter runtime errors if your type guard has a bug, e.g. if you have a misspelling such as `"desrciption" in entity`.
 This predicate for the type guard is syntactically correct, but semantically not right.
 During runtime the type guard would always return false and thus it might be possible the code attempts to access `entity.phoneNumber` for `Project` entities causing a crash.
 ====
@@ -109,7 +109,7 @@ const isProject = (entity: Client | Project): entity is Project => entity.__type
 In this example the result of the type guard is relying on the `__typename` field introduced by GraphQL to infer the type of the entity.
 ====
 
-To prevent possible bugs and typos for expressions of the for `propertyName in object` it is encouraged to use type-casts to enable type-checking while writing the type guard:
+To prevent possible bugs and misspellings for expressions of the for `propertyName in object` it is encouraged to use type-casts to enable type-checking while writing the type guard:
 
 [source,typescript]
 ----
@@ -118,7 +118,7 @@ const isProject = (entity: Client | Project): entity is Project => (entity as Pr
 
 The previous snippet attempts to type-cast `entity` into a `Project` (which actually only happens during compile time) in order to access members of `Project`, i.e. the `description` property.
 By checking whether `description` is in fact a member of `entity` (hence not `undefined`) it is deduced that `entity` must be a `Project`.
-This will prevent typos and fail during compilation if something isn't correct.
+This will prevent misspellings and fail during compilation if something isn't correct.
 
 [[literal-types]]
 == Literal Types
@@ -199,7 +199,7 @@ type SearchResponse = SearchEntry[];
 ----
 
 Can you spot the semantical (not syntactical!) error?
-The `kind` property is a `string` which is rather error-prone to typos, e.g. `responseItem.kind === "Porject"` which isn't picked up by the compiler as being erroneous.
+The `kind` property is a `string` which is rather error-prone to misspellings, e.g. `responseItem.kind === "Porject"` which isn't picked up by the compiler as being erroneous.
 It allows any string to be either assigned to or read from those properties.
 These are the subtle runtime errors that are difficult to debug and track down which can be caught during compilation using Typescript.
 Furthermore the type badly documents the underlying API as the API does not return just arbitrary strings for the `kind`.

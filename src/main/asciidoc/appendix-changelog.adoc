@@ -23,6 +23,7 @@ All notable changes to this project will be documented on this page.
 === Changed
 * Editor screenshots to use a light theme to be more pleasant to watch.
 * The table of contents so it expands right away no longer hiding certain sections.
+* Informal occurences of "typo(s)" with "misspelling(s)".
 
 === Fixed
 * A misspelling of the word "operator" in the section about the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>>.
