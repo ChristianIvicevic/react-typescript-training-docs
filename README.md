@@ -27,7 +27,7 @@ The project uses Node scripts defined in `package.json` that are run by yarn. Gr
 
 After cloning the repository for the first time run `yarn` to install all dependencies used during postprocessing.
 
-In order to actually build the project, run `yarn build`. The compilation output is stored in `build/asciidoc/html5/` and you can just view the `build/asciidoc/html5/index.html` file in your browser.
+In order to actually build the project, run `yarn build`. The compilation output is stored in `build/docs/asciidoc/` and you can just view the `build/docs/asciidoc/index.html` file in your browser.
 
 ## Deployments
 
