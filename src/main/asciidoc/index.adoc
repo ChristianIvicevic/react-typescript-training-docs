@@ -1,18 +1,3 @@
-// Document conventions:
-// * One sentence per line
-// * US spelling (single t in formating, ize not ise, color)
-// * No highlighting breaking the flow of reading
-// * e.g. not eg
-// * The author is "we"
-// * The reader is "you"
-// * DRY URLs
-// * You define parameters, and you make arguments
-// * Admonitions:
-// ** Note admonitions: Offer additional information that the reader may find helpful but that is not crucial to the content.
-// ** Important admonitions: Call out things that the reader really should know when working with the content.
-// ** Tip admonitions: Offer shortcuts or other details that make things easier or faster for the reader.
-// ** Caution admonitions: Let readers know of common errors or other issues that may slow their work or send them down an unproductive path.
-// ** Warning admonitions: Let readers know of risks or other issues that may cause severe problems, most notably data loss (including loss of information from databases, file systems, and version control systems).
 [[react-typescript-bootcamp-docs]]
 = Mob Training: React / Typescript
 Christian Ivicevic <https://github.com/ChristianIvicevic[@ChristianIvicevic]>
