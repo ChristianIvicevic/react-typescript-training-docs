@@ -1,2 +1,3 @@
 [build]
     publish = "build/asciidoc/html5/"
+    command = "yarn build"
