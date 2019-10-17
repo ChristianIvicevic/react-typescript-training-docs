@@ -1,18 +1,19 @@
-import org.asciidoctor.gradle.AsciidoctorTask
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
 
 group = "com.reply.comsysto"
-version = "1.0-SNAPSHOT"
+version = "0.2.0-SNAPSHOT"
 
 val docs: Configuration by configurations.creating
 
 plugins {
-    id("org.asciidoctor.convert") version "1.5.9.2"
+    id("org.asciidoctor.jvm.convert") version "2.3.0"
 }
 
 repositories {
     maven {
         url = uri("https://repo.spring.io/libs-release-local")
     }
+    jcenter()
 }
 
 dependencies {
@@ -45,13 +46,14 @@ tasks {
     named<AsciidoctorTask>("asciidoctor") {
         dependsOn("prepareAsciidocBuild")
 
-        sourceDir = file("$buildDir/asciidoc/build")
+        setSourceDir("$buildDir/asciidoc/build")
+        setBaseDir("$buildDir/asciidoc/build")
         sources(delegateClosureOf<PatternSet> {
             include("*.adoc")
             exclude("attributes.adoc")
         })
         resources(delegateClosureOf<CopySpec> {
-            from(sourceDir) {
+            from("$buildDir/asciidoc/build") {
                 include("images/**", "css/**", "js/**")
             }
         })
@@ -63,9 +65,6 @@ tasks {
                 "stylesheet" to "spring.css",
                 "linkcss" to true,
                 "icons" to "font"
-                // "source-highlighter" to "highlight.js",
-                // "highlightjsdir" to "js/highlight",
-                // "highlightjs-theme" to "github"
         )
     }
 }
