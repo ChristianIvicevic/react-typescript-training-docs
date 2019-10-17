@@ -1,6 +1,6 @@
 {
-    "name": "react-typescript-bootcamp-docs",
-    "description": "This project contains the documentation for the Comsysto React / Typescript training",
+    "name": "@comsysto/react-typescript-training-docs",
+    "description": "This project contains the training material and documentation for the Comsysto React/Typescript Training",
     "version": "0.2.0-SNAPSHOT",
     "private": true,
     "scripts": {

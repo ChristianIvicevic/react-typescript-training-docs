@@ -46,7 +46,7 @@ For the training itself we require you to be familiar with the following topics:
 ** https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Async_await[``await``ing results of ``async`` functions and Promises]
 
 [[training-material]]
-== Training material
+== Training Material
 You are currently browsing the documentation that we have designed for the training.
 It is intended as your first introduction into the topics and terminology as well as being the reference document during the training itself.
 Before attending the training we expect you to read through all the sections of this documentation.

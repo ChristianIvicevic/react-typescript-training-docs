@@ -1,1 +1,1 @@
-rootProject.name = "react-typescript-bootcamp-docs"
+rootProject.name = "react-typescript-training-docs"
