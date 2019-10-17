@@ -7,7 +7,7 @@ This is the training material and documentation for the Comsysto React/Typescrip
 | [`master`](https://comsysto-react-typescript-training.netlify.com)  | [![Netlify Status](https://api.netlify.com/api/v1/badges/72b65bbb-fbb3-49d2-ba27-4391b5b80d8f/deploy-status)](https://comsysto-react-typescript-training.netlify.com)     |
 | [`dev`](https://comsysto-react-typescript-training-dev.netlify.com) | [![Netlify Status](https://api.netlify.com/api/v1/badges/3968112b-2b5d-4782-ae4a-8a80a50428dd/deploy-status)](https://comsysto-react-typescript-training-dev.netlify.com) |
 
-If you find errors or omissions in the documentation, please don't hesitate to [submit an issue or open a pull request](https://github.com/ChristianIvicevic/react-typescript-bootcamp-docs/issues) with a fix. We also encourage you to ask questions and discuss any aspects of the project.
+If you find errors or omissions in the documentation, please don't hesitate to [submit an issue or open a pull request](https://github.com/ChristianIvicevic/react-typescript-training-docs/issues) with a fix. We also encourage you to ask questions and discuss any aspects of the project.
 
 ## Local Development
 

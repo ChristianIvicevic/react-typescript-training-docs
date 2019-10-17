@@ -12,5 +12,5 @@
 :docinfo: shared,private
 :xrefstyle: short
 
-:docs-repo-issues: https://github.com/ChristianIvicevic/react-typescript-bootcamp-docs/issues
+:docs-repo-issues: https://github.com/ChristianIvicevic/react-typescript-training-docs/issues
 :mdn-reference: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference
