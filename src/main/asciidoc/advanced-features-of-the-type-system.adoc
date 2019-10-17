@@ -248,11 +248,12 @@ type Options = {
 ----
 <1> In 3rd party libraries, especially in legacy JS projects, you'll stumble across options supplied to methods or constructors, that allow atomic values such as booleans (for default configurations) or more nuanced objects with further options.
 
+[[tip-use-literal-types-in-favor-of-enums]]
 [TIP]
 ====
-Use literal types over string based enums.
+Use literal types if favor of string based enums when the enum values are the same as their keys.
 Literal types are shorter, less redundant and better since reverse lookups do not work for enums with string values anyways.
-There is no value in using an enum over a literal type.
+For detailed information when string based enums are actually better than literal types refer to the section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,Transparency and Opaqueness>>.
 
 [source,typescript]
 ----
@@ -408,6 +409,15 @@ TODO: This is a placeholder for content that hasn't been written yet.
 
 [[conditional-types]]
 == Conditional Types
+
+[WARNING]
+====
+TODO: This is a placeholder for content that hasn't been written yet.
+====
+
+
+[[transparency-and-opaqueness]]
+== Transparency and Opaqueness
 
 [WARNING]
 ====

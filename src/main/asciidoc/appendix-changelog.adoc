@@ -13,7 +13,13 @@ All notable changes to this project will be documented on this page, and this pr
 // === Fixed
 // === Security
 
-// == Unreleased
+== Unreleased
+
+=== Added
+* A new section stub about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>> has been added.
+
+=== Changed
+* The tip that <<advanced-features-of-the-type-system.adoc#tip-use-literal-types-in-favor-of-enums,literal types should be used in favor of string based enums>> has been extended to link the section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>>.
 
 == v0.1.0 - 2019-10-16
 
