@@ -2,7 +2,7 @@
 = Changelog
 include::attributes.adoc[]
 
-All notable changes to this project will be documented on this page.
+All notable changes to this project will be documented on this page, and this project adheres to https://semver.org/spec/v2.0.0.html[Semantic Versioning].
 
 // == Date
 //
@@ -18,12 +18,12 @@ All notable changes to this project will be documented on this page.
 == v0.1.0 - 2019-10-16
 
 === Added
-* Changelog page.
+* Introduced a Changelog page where all notable changes to this project will be documented.
 
 === Changed
-* Editor screenshots to use a light theme to be more pleasant to watch.
-* The table of contents so it expands right away no longer hiding certain sections.
-* Informal occurences of "typo(s)" with "misspelling(s)".
+* Editor screenshots have been updated to use a light theme to be more pleasant to watch (was previously a dark theme).
+* The table of contents expands all headers right away (was previously hiding certain sections).
+* Replaced informal occurences of the word _typo(s)_ with the word _misspelling(s)_.
 
 === Fixed
-* A misspelling of the word "operator" in the section about the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>>.
+* A misspelling of the word _operator_ in the section about the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>>.
