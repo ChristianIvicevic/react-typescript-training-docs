@@ -292,7 +292,8 @@ In order to prevent anomalies you should always explicitly assign values to enum
 === Constant Enums
 When compiling enums a lot of code is internally created to allow reverse lookups which might not be necessary most of the time.
 You can optimize this by enabling so-called type erasure for enums by making them constant and inlining their values.
-This means no traces of the actual enumeration will be in the generated code which transforms the following snippet
+This means no traces of the actual enumeration will be in the generated code reducing the bundle size significantly.
+To compare the differences, we will compile the following snippet:
 
 [source,typescript]
 ----
@@ -306,18 +307,17 @@ const enum Colors {
 const colors = [Colors.Red, Colors.Black, Colors.Green, Colors.White];
 ----
 
-into this terse definition
+Since the previous snippet was defining a constant enum, the compiler will produce the following terse output:
 
 [source,typescript]
 ----
 var colors = [0, 1, 2, 3];
 ----
 
-instead of
+For an enum that is not marked as constant the compiler output is the following:
 
 [source,typescript]
 ----
-"use strict";
 var Colors;
 (function (Colors) {
     Colors[Colors["Red"] = 0] = "Red";
@@ -327,8 +327,6 @@ var Colors;
 })(Colors || (Colors = {}));
 const colors = [Colors.Red, Colors.Black, Colors.Green, Colors.White];
 ----
-
-which reduces bundle size significantly.
 
 [[any]]
 === Any
