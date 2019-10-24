@@ -33,17 +33,13 @@ Attempting to access properties that the respective types don't have in common w
 
 [source,typescript]
 ----
-const entity: Client | Project = /* ... */;
+const entity/* @TypeHint(Client | Project) */ = /* ... */;
 
-const entityId = entity.id;
-const entityName = entity.name;
-const entityDescription = entity.description;
-//                               ~~~~~~~~~~~ <1>
-const entityPhoneNumber = entity.phoneNumber;
-//                               ~~~~~~~~~~~ <2>
+const entityId/* @TypeHint(number) */ = entity.id;
+const entityName/* @TypeHint(string) */ = entity.name;
+const entityDescription = entity./* @CompilerError(error: Property 'description' does not exist on type 'Client | Project'.\nProperty 'description' does not exist on type 'Client'.) */description/**/;
+const entityPhoneNumber = entity./* @CompilerError(error: Property 'phoneNumber' does not exist on type 'Client | Project'.\nProperty 'phoneNumber' does not exist on type 'Project'.) */phoneNumber/**/;
 ----
-<1> `error: Property 'description' does not exist on type 'Client | Project'. Property 'description' does not exist on type 'Client'.`
-<2> `error: Property 'phoneNumber' does not exist on type 'Client | Project'. Property 'phoneNumber' does not exist on type 'Project'.`
 
 Even though Typescript error messages can be daunting at times they are usually really helpful to figure out what's actually causing the error if you track the different causes for bigger errors in the hierarchy.
 In the previous example the first error message tells you, that you cannot safely access the `description` property of a `Client | Project` object because this property doesn't exist in the `Client` type in the first place.
@@ -69,15 +65,15 @@ Using the type guard in the previous snippet it is possible to access the entity
 
 [source,typescript]
 ----
-const entity: Client | Project = /* ... */; // <1>
+const entity/* @TypeHint(Client | Project) */ = /* ... */; // <1>
 
-const entityId = entity.id; // <2>
-const entityName = entity.name; // <2>
+const entityId/* @TypeHint(number) */ = entity.id; // <2>
+const entityName/* @TypeHint(string) */ = entity.name; // <2>
 
 if (isProject(entity)) { // <3>
-    const entityDescription = entity.description; // <4>
+    const entityDescription/* @TypeHint(string) */ = entity.description; // <4>
 } else {
-    const entityPhoneNumber = entity.phoneNumber; // <5>
+    const entityPhoneNumber/* @TypeHint(string) */ = entity.phoneNumber; // <5>
 }
 ----
 <1> In this outer scope `entity` is definitely of type `Client | Project`.
@@ -223,16 +219,15 @@ This new version will catch errors during compilation that were previously only 
 
 [source,typescript]
 ----
-const response: SearchResponse = /* ... */;
+const response/* @TypeHint(SearchResponse) */ = /* ... */;
 
-response.forEach((searchEntry) => {
-    if (searchEntry.kind === "Porject") {
-    //  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <1>
+response.forEach((searchEntry/* @TypeHint(SearchEntry) */) => {
+    if (/* @CompilerError(error: This condition will always return 'false' since the types '"Client" | "Project" | "Factory"' and '"Porject"' have no overlap.) */searchEntry.kind === "Porject"/**/) {
+        // ...
     }
     // ...
 });
 ----
-<1> `error: This condition will always return 'false' since the types '"Client" | "Project" | "Factory"' and '"Porject"' have no overlap.`
 
 Literal types are allowed for strings, numerical values, booleans and any union of either of them:
 
@@ -282,16 +277,14 @@ type Factory = {
     location: string;
 };
 
-const rainbowFactory: Factory = /* ... */;
+const rainbowFactory/* @TypeHint(Factory) */ = /* ... */;
 
 const idAndNameTuple = pluck(rainbowFactory, ["id", "name"]);
 // -> [1, "Rainbow Factory"]
 const nameAndLocationTuple = pluck(rainbowFactory, ["name", "location"]);
 // -> ["Rainbow Factory", "Whimsyshire"]
-const errorTuple = pluck(rainbowFactory, ["name", "something"]);
-//                                                ~~~~~~~~~~~ <1>
+const errorTuple = pluck(rainbowFactory, ["name", /* @CompilerError(error: Type 'string' is not assignable to type '"id" | "name" | "description" | "location"'.) */"something"/**/]);
 ----
-<1> `error: Type 'string' is not assignable to type '"id" | "name" | "description" | "location"'.`
 
 The goal is to leverage Typescript utilities to make `pluck` aware of the type of the supplied object and propose as well as check for property names.
 Frankly, the error message that Typescript provides can be misleading for beginners, but it denotes that there was an attempt to assign an arbitrary string to a literal type and it fails during compilation.

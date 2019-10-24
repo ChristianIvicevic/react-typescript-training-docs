@@ -41,8 +41,7 @@ By appending `: Type` to those elements you can annotate them and make the compi
 // Assigning some variables
 const variable1: number = 42;
 const variable2: string = "Hello, Typescript!";
-const variable3: boolean = "wrong type";
-//    ~~~~~~~~~ <1>
+const /* @CompilerError(error: Type '"wrong type"' is not assignable to type 'boolean'.) */variable3/**/: boolean = "wrong type";
 
 // Defining a custom function
 /**
@@ -54,14 +53,9 @@ function isThirteen(arg: number): boolean {
 
 // Attempting to call the custom function and store the return value
 const result1: boolean = isThirteen(42);
-const result2: boolean = isThirteen("42");
-//                                  ~~~~ <2>
-const result3: string = isThirteen(42);
-//    ~~~~~~~ <3>
+const result2: boolean = isThirteen(/* @CompilerError(error: Argument of type '"42"' is not assignable to parameter of type 'number'.) */"42"/**/);
+const /* @CompilerError(error: Type 'boolean' is not assignable to type 'string'.) */result3/**/: string = isThirteen(42);
 ----
-<1> `error: Type '"wrong type"' is not assignable to type 'boolean'.`
-<2> `error: Argument of type '"42"' is not assignable to parameter of type 'number'.`
-<3> `error: Type 'boolean' is not assignable to type 'string'.`
 
 The previous snippet shows that even minor additional type annotations help to track down illegal assignments.
 Not only variables but parameters and return values can be annotated to make the compiler keep track of them and notify you if you make a mistake.
@@ -84,6 +78,28 @@ function isThirteen(arg: number) {
 const result1 = isThirteen(42);
 ----
 
+[TIP]
+====
+For the rest of this documentation we will not be explicitly typing expression that Typescript can automatically infer.
+However the snippets will display small type hints for your reading experience indicating which types are infered.
+The previous snippet with these type hints looks as follows:
+
+[source,typescript]
+----
+const variable1/* @TypeHint(number) */ = 42;
+const variable2/* @TypeHint(string) */ = "Hello, Typescript!";
+
+/**
+ * This function takes a number as an argument and returns a boolean.
+ */
+function isThirteen(arg: number)/* @TypeHint(boolean) */ {
+    return arg === 13;
+}
+
+const result1/* @TypeHint(boolean) */ = isThirteen(42);
+----
+====
+
 Notice that by assigning a constant value of a specific type will narrow down the type of the respective variable, i.e. `variable1` must be number and cannot be anything else after assigning `42`.
 Hovering over the `isThirteen` function in VS Code will yield the infered return type annotation:
 
@@ -101,14 +117,8 @@ Typescript allows you to work with arrays that are defined like in most other pr
 
 [source,typescript]
 ----
-const list: number[] = [3, 1, 4, 1, 5];
+const list/* @TypeHint(number[]) */ = [3, 1, 4, 1, 5];
 ----
-
-[TIP]
-====
-Once again the type annotation `number[]` in the previous snippet can (and should) be omitted, since it can be infered from the right hand side.
-For the purpose of this documentation however, we're usually not omitting them in the upcoming examples to explicitly describe the types we're working with.
-====
 
 [[read-only-arrays]]
 === Read-only Arrays
@@ -119,13 +129,9 @@ To declare a read-only array you have to write `readonly Type[]` as follows:
 [source,typescript]
 ----
 const list: readonly number[] = [3, 1, 4, 1, 5];
-list.push(9);
-//   ~~~~ <1>
-list[2] = 0;
-//~~~~~ <2>
+list./* @CompilerError(error: Property 'push' does not exist on type 'readonly number[]'.) */push/**/(9);
+/* @CompilerError(error: Index signature in type 'readonly number[]' only permits reading.) */list[2]/**/ = 0;
 ----
-<1> `error: Property 'push' does not exist on type 'readonly number[]'.`
-<2> `Index signature in type 'readonly number[]' only permits reading.`
 
 [NOTE]
 ====
@@ -134,10 +140,8 @@ In order to make a mutable copy of a read-only array use the spread syntax:
 [source,typescript]
 ----
 const pi: readonly number[] = [3, 1, 4, 1, 5];
-const newPi: number[] = [...pi];
+const newPi/* @TypeHint(number[]) */ = [...pi];
 ----
-
-Even without the explicit `number[]` type annotation `newPi` has the same mutable type.
 ====
 
 [WARNING]
@@ -154,9 +158,9 @@ const entities: readonly Entity[] = [
     { id: 3 },
 ];
 
-const entitiesCopy = [...entities]; // <2>
+const entitiesCopy/* @TypeHint(Entity[]) */ = [...entities]; // <2>
 entitiesCopy[1].id = 13; // <3>
-const isSame = entities[1].id === entitiesCopy[1].id; // <4>
+const isSame/* @TypeHint(boolean) */ = entities[1].id === entitiesCopy[1].id; // <4>
 ----
 <1> We haven't introduced this notation of type aliases yet, but basically it is a type called `Entity` which can store a numerical id.
 More information on type aliases can be seen in the section on the topic of advanced types.
@@ -176,17 +180,15 @@ const entities: readonly Entity[] = [
     { id: 3 },
 ];
 
-const entitiesCopy = [...entities]; // <2>
-entitiesCopy[1].id = 13;
-//              ~~ <3>
-entitiesCopy[1] = { id: 13 }; // <4>
-const isSame = entities[1].id === entitiesCopy[1].id; // <5>
+const entitiesCopy/* @TypeHint(Entity[]) */ = [...entities]; // <2>
+entitiesCopy[1]./* @CompilerError(error: Cannot assign to 'id' because it is a read-only property.) */id/**/ = 13;
+entitiesCopy[1] = { id: 13 }; // <3>
+const isSame/* @TypeHint(boolean) */ = entities[1].id === entitiesCopy[1].id; // <4>
 ----
 <1> The `id` property is annotated with `readonly`.
 <2> This is STILL a new array with copies of the old object references.
-<3> `error: Cannot assign to 'id' because it is a read-only property.`
-<4> Instead, we can assign a completely new object.
-<5> Thus, `isSame` will be false since we replace the object reference in `entitiesCopy` with a completely new object.
+<3> Instead, we can assign a completely new object.
+<4> Thus, `isSame` will be false since we replace the object reference in `entitiesCopy` with a completely new object.
 
 This example demonstrates that marking something as read-only isn't the same as it being immutable.
 ====
@@ -200,20 +202,17 @@ While arrays are dynamic in size and usually homogenous, tuples can be used to d
 const numericValue = 42;
 const kvPair1: [string, number] = ["key", numericValue];
 const kvPair2: [string, number] = ["key", 31];
-const kvPair3: [string, number] = ["key", "value"];
-//                                        ~~~~~~~ <1>
+const kvPair3: [string, number] = ["key", /* @CompilerError(error: Type 'string' is not assignable to type 'number'.) */"value"/**/];
 ----
-<1> `error: Type 'string' is not assignable to type 'number'.`
 
 Furthermore accessing the elements of this array correctly retrieves their types allowing safe method calls such as `kvPair1[0].substring(1)`.
 On top of that, accessing elements out of bounds, i.e. trying to read `kvPair2[5]`, will fail already during compilation since tuples have a fixed size:
 
+// TODO: This CompilerError is clipped at the top unfortunately... fix it.
 [source,typescript]
 ----
-const noValue = kvPair2[5];
-//                      ~ <1>
+const noValue = kvPair2[/* @CompilerError(error: Tuple type '[string, number]' of length '2' has no element at index '5'.) */5/**/];
 ----
-<1> `error: Tuple type '[string, number]' of length '2' has no element at index '5'.`
 
 [[enums]]
 === Enums
@@ -221,24 +220,22 @@ A feature native to Typescript are enumerations which are used to assign human r
 
 [source,typescript]
 ----
-enum Shapes {
+enum Shape {
     Circle,
     Square,
     Triangle,
 }
 
-const someShape = Shapes.Circle;
-const someOtherShape = Shapes.DoesNotExist;
-//                            ~~~~~~~~~~~~ <1>
+const someShape/* @TypeHint(Shape) */ = Shape.Circle;
+const someOtherShape = Shape./* @CompilerError(error: Property 'DoesNotExist' does not exist on type 'typeof Shape'.) */DoesNotExist/**/;
 ----
-<1> `error: Property 'DoesNotExist' does not exist on type 'typeof Shapes'.`
 
 In enums zero is always assigned to the first element with all other elements being increments of the previous.
 Thus the previous snippet is equivalent to the following:
 
 [source,typescript]
 ----
-enum Shapes {
+enum Shape {
     Circle = 0,
     Square = 1,
     Triangle = 2,
@@ -249,7 +246,7 @@ However, you can assign custom numerical or string values to your enum items:
 
 [source,typescript]
 ----
-enum Shapes {
+enum Shape {
     Circle = 2,
     Square = 4,
     Triangle = 8,
@@ -265,13 +262,13 @@ Enums allow you to perform reverse lookups wherein numerical values can be mappe
 
 [source,typescript]
 ----
-enum Shapes {
+enum Shape {
     Circle,
     Square,
     Triangle,
 }
 
-const shapeName: string = Shapes[1];
+const shapeName/* @TypeHint(string) */ = Shape[1];
 console.log(shapeName); // <1>
 ----
 <1> Displays `Square`.
@@ -296,14 +293,14 @@ This means no traces of the actual enumeration will be in the generated code whi
 
 [source,typescript]
 ----
-const enum Colors {
+const enum Color {
     Red,
     Black,
     Green,
     White,
 }
 
-const colors = [Colors.Red, Colors.Black, Colors.Green, Colors.White];
+const colors/* @TypeHint(Color[]) */ = [Color.Red, Color.Black, Color.Green, Color.White];
 ----
 
 into this terse definition
@@ -318,14 +315,14 @@ instead of
 [source,typescript]
 ----
 "use strict";
-var Colors;
-(function (Colors) {
-    Colors[Colors["Red"] = 0] = "Red";
-    Colors[Colors["Black"] = 1] = "Black";
-    Colors[Colors["Green"] = 2] = "Green";
-    Colors[Colors["White"] = 3] = "White";
-})(Colors || (Colors = {}));
-const colors = [Colors.Red, Colors.Black, Colors.Green, Colors.White];
+var Color;
+(function (Color) {
+    Color[Color["Red"] = 0] = "Red";
+    Color[Color["Black"] = 1] = "Black";
+    Color[Color["Green"] = 2] = "Green";
+    Color[Color["White"] = 3] = "White";
+})(Color || (Color = {}));
+const colors = [Color.Red, Color.Black, Color.Green, Color.White];
 ----
 
 which reduces bundle size significantly.
@@ -368,9 +365,9 @@ let variable: any = 42;
 variable = "string";
 variable = false;
 
-const value1 = variable.call.some.method.thatDoesntExist();
-const value2 = variable[3];
-const value3 = new variable();
+const value1/* @TypeHint(any) */ = variable.call.some.method.thatDoesntExist();
+const value2/* @TypeHint(any) */ = variable[3];
+const value3/* @TypeHint(any) */ = new variable();
 ----
 
 In order to prevent those erroneous calls and assignments allowed by `any` you can leverage `unknown`.
@@ -383,22 +380,14 @@ let variable: unknown = 42;
 variable = "string";
 variable = false;
 
-const value1 = variable.call.some.method.thatDoesntExist();
-//             ~~~~~~~~ <1>
-const value2 = variable[3];
-//             ~~~~~~~~ <2>
-const value3 = new variable();
-//                 ~~~~~~~~ <3>
+const value1 = /* @CompilerError(error: Object is of type 'unknown'.) */variable/**/.call.some.method.thatDoesntExist();
+const value2 = /* @CompilerError(error: Object is of type 'unknown'.) */variable/**/[3];
+const value3 = new /* @CompilerError(error: Object is of type 'unknown'.) */variable/**/();
 
 const anyVariable: any = variable;
 const unknownVariable: unknown = variable;
-const boolVariable: boolean = variable;
-//    ~~~~~~~~~~~~ <4>
+const /* @CompilerError(error: Type 'unknown' is not assignable to type 'boolean'.) */boolVariable/**/: boolean = variable;
 ----
-<1> `error: Object is of type 'unknown'.`
-<2> `error: Object is of type 'unknown'.`
-<3> `error: Object is of type 'unknown'.`
-<4> `error: Type 'unknown' is not assignable to type 'boolean'.`
 
 [IMPORTANT]
 ====
@@ -416,18 +405,16 @@ What's awesome about Typescript is, that it is able to deduce whether a variable
 
 [source,typescript]
 ----
-const someObjectThatMightBeUndefined = /* ... */; // <1>
+const mightBeUndefined = /* ... */; // <1>
 
-const value1 = someObjectThatMightBeUndefined.getValue();
-//             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ <2>
+const value1 = /* @CompilerError(error: Object is possibly 'undefined'.) */mightBeUndefined/**/.getValue();
 
-if (someObjectThatMightBeUndefined !== undefined) {
-    const value2 = someObjectThatMightBeUndefined.getValue(); // <3>
+if (mightBeUndefined !== undefined) {
+    const value2 = mightBeUndefined.getValue(); // <2>
 }
 ----
 <1> Without explicitly denoting the type of this variable, assume that it might be `undefined`.
-<2> `error: Object is possibly 'undefined'.`
-<3> This works just fine, since Typescript knows the object definitely isn't `undefined` in this scope and we even get code completion when attempting to call `getValue`.
+<2> This works just fine, since Typescript knows the object definitely isn't `undefined` in this scope and we even get code completion when attempting to call `getValue`.
 
 [NOTE]
 ====
@@ -453,8 +440,8 @@ Using the `Array.reduce` method on an empty array as the initial value will caus
 
 [source,typescript]
 ----
-const neverArray = [1, 2, 3].reduce((acc, next) => acc, []);
-//                                                      ~~ <1>
+const neverArray/* @TypeHint(never[]) */ = [1, 2, 3].reduce((acc, next) => acc, []);
+//                                                                  ^^ <1>
 ----
 <1> This array is considered to be of type `never[]` as Typescript cannot safely deduce its type.
 This prevents you to do virtually anything to it as Typescript wouldn't otherwise be able to check whether your operations are safe.
@@ -468,10 +455,8 @@ Even the following snippet that actually tries to work with the accumulator valu
 
 [source,typescript]
 ----
-const array = [1, 2, 3].reduce((acc, next) => [...acc, next], []);
-//                                            ~~~~~~~~~~~~~~ <1>
+const array = [1, 2, 3].reduce((acc, next) => /* @CompilerError(error: Type 'number' is not assignable to type 'never'.) */[...acc, next]/**/, []);
 ----
-<1> `error: Type 'number' is not assignable to type 'never'.`
 
 Attempting to append a `number` to a `never[]` which isn't posible will fail since `never` is incompatible to all other types, even `any` and `never[]`.
 
@@ -481,8 +466,8 @@ At some point you will stumble upon the above issue with `Array.reduce` and it c
 
 [source,typescript]
 ----
-const array = [1, 2, 3].reduce<number[]>((acc, next) => [...acc, next], []);
-//                             ~~~~~~~~ <1>
+const array/* @TypeHint(number[]) */ = [1, 2, 3].reduce<number[]>((acc, next) => [...acc, next], []);
+//                                          ^^^^^^^^ <1>
 ----
 <1> Type of the initial (and return) value, in our case making it an array of numbers.
 ====
@@ -595,12 +580,10 @@ class Insect {
     public move() { /* ... */ }
 }
 
-const entity: Human | Insect = /* ... */;
+const entity/* @TypeHint(Human | Insect) */ = /* ... */;
 entity.move();
-entity.speak();
-//     ~~~~~ <1>
+entity./* @CompilerError(error: Property 'speak' does not exist on type 'Human | Insect'.\nProperty 'speak' does not exist on type 'Insect'.) */speak/**/();
 ----
-<1> `error: Property 'speak' does not exist on type 'Human | Insect'. Property 'speak' does not exist on type 'Insect'.`
 
 When attempting to access members of the `entity` variable Typescript can certainly assume that it has the `move` method since it is contained in both `Human` and `Insect`.
 However trying to invoke `speak` might fail during runtime depending on the actual type of `entity` since there is no distinction between either types yet and Typescript will not allow the compilation of this unsafe snippet.
@@ -640,16 +623,16 @@ A rather artificial example is the following:
 
 [source,typescript]
 ----
-const numberToString = (arg: number) => `${arg}`;
-const booleanToString = (arg: boolean) => `${arg}`;
-const dateToString = (arg: Date) => `${arg}`;
+const numberToString/* @TypeHint(string) */ = (arg: number) => `${arg}`;
+const booleanToString/* @TypeHint(string) */ = (arg: boolean) => `${arg}`;
+const dateToString/* @TypeHint(string) */ = (arg: Date) => `${arg}`;
 ----
 
 You'll notice that the only difference is the annotated type so you can use a union type to combine all allowed types:
 
 [source,typescript]
 ----
-const toString = (arg: number | boolean | Date) => `${arg}`;
+const toString/* @TypeHint(string) */ = (arg: number | boolean | Date) => `${arg}`;
 ----
 
 This can end up being quite convoluted when you support many types and just want a generic method for virtually all types.
@@ -657,25 +640,23 @@ Thus generics have been borrowed from other programming languages that are place
 
 [source,typescript]
 ----
-const toString = <ArgType>(arg: ArgType) => `${arg}`; // <1>
+const toString/* @TypeHint(string) */ = <ArgType>(arg: ArgType) => `${arg}`; // <1>
 ----
 <1> This method now has a new special type parameter called `ArgTyp` enclosed by angle brackets.
 It behaves like a placeholder where each occurence of it would be replaced by the supplied type.
 Writing `toString<number>(...)` indicates that `arg` is of type `number` etc.
 
-Now it ispossible to invoke this method as follows:
+Now it is possible to invoke this method as follows:
 
 [source,typescript]
 ----
-const string1 = toString<number>(42);
-const string2 = toString<boolean>(false);
-const string3 = toString<number>("string");
-//                               ~~~~~~~~ <1>
-const string4 = toString(42);
-//                       ~~ <2>
+const string1/* @TypeHint(string) */ = toString<number>(42);
+const string2/* @TypeHint(string) */ = toString<boolean>(false);
+const string3/* @TypeHint(string) */ = toString<number>(/* @CompilerError(error: Argument of type '"string"' is not assignable to parameter of type 'number'.) */"string"/**/);
+const string4/* @TypeHint(string) */ = toString(42);
+//                                  ^^ <1>
 ----
-<1> `error: Argument of type '"string"' is not assignable to parameter of type 'number'.`
-<2> Often there is no need to explicitly write generic types for invocations since Typescript can infer them from the usage.
+<1> Often there is no need to explicitly write generic types for invocations since Typescript can infer them from the usage.
 Here 42 is a number, thus this line is treated as `toString<number>(42)`.
 
 Generics exist for classes and other types as well.
@@ -708,12 +689,12 @@ Such a predicate is usually used for conditions to check in methods such as `Arr
 ----
 type Predicate<T> = (arg: T) => boolean; // <1>
 
-const isThirteen: Predicate<number> = (arg) => arg === 13; // <2>
-//                                     ~~~ <3>
+const isThirteen: Predicate<number> = (arg/* @TypeHint(number) */) => arg === 13; // <2>
+//                                     ^^^ <3>
 
-const array = [1, 2, 13, 4, 13, 5];
-const thirteens = array.filter(isThirteen);
-const containsThirteen = array.some(isThirteen);
+const array/* @TypeHint(number[]) */ = [1, 2, 13, 4, 13, 5];
+const thirteens/* @TypeHint(number[]) */ = array.filter(isThirteen);
+const containsThirteen/* @TypeHint(boolean) */ = array.some(isThirteen);
 ----
 <1> This type describes a function that maps any type onto a boolean.
 <2> We define this method to be a predicate operating on numbers.
@@ -741,7 +722,7 @@ abstract class Component<Props, State> { // <1>
 
     /* ... */
 
-    public setState(newState: State) { // <4> <5>
+    public setState(newState: State)/* @TypeHint(void) */ { // <4> <5>
         /* ... */
     }
 }
@@ -766,7 +747,7 @@ type ButtonState = {
 };
 
 class Button extends Component<ButtonProps, ButtonState> { // <1>
-    public void render() { // <2>
+    public void render()/* @TypeHint(JSX.Element) */ { // <2>
         return (
             <button // <3>
                 className={`btn btn--is-${this.state.isActive ? "active" : "inactive"} ${this.props.className}`} // <4>
@@ -777,9 +758,8 @@ class Button extends Component<ButtonProps, ButtonState> { // <1>
         );
     }
 
-    private readonly onClick = () => { // <7>
-        this.setState({ isActive: true, doesNotExist: 13 }); // <8>
-        //                              ~~~~~~~~~~~~ // <9>
+    private readonly onClick = ()/* @TypeHint(void) */ => { // <7>
+        this.setState({ isActive: true, /* @CompilerError(error: Property 'doesNotExist' does not exist on type 'ButtonState'.) */doesNotExist/**/: 13 }); // <8>
     };
 
     // ...
@@ -794,4 +774,3 @@ Don't worry if you're not familiar with this, just try to understand the way we 
 <6> The button displays the text supplied via the `text` prop.
 <7> Our custom event handler for the `onClick` event which is wired up in the `render` method above.
 <8> We have access to the `setState` method of the parent class and can attempt to set the `state` variable.
-<9> `error: Property 'doesNotExist' does not exist on type 'ButtonState'.`

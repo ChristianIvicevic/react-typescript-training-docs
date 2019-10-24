@@ -2,6 +2,8 @@
 = About the Training
 include::attributes.adoc[]
 
+Here you can find general information about the training itself including the scope, requirements and details on the training material.
+
 == Introduction
 You have been hired to build a frontend based on cutting edge technology for the Rusty Lobster.
 So far, the backend developers have already created a fully-documented REST API which is at your disposal.
