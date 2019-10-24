@@ -4,6 +4,19 @@
     "version": "0.2.0-SNAPSHOT",
     "private": true,
     "scripts": {
-        "build": "./gradlew asciidoctor"
-    }
+        "build": "yarn clean && yarn styles && yarn tm-transform-resources && ./gradlew asciidoctor && yarn postprocess",
+        "rebuild": "./gradlew asciidoctor && yarn postprocess",
+        "clean": "shx rm -rf build",
+        "styles": "node-sass --recursive --output src/resources/css/ src/resources/scss/",
+        "styles:watch": "node-sass --watch --recursive --output src/resources/css/ src/resources/scss/",
+        "styles:update": "node-sass --recursive --output src/resources/css/ src/resources/scss/ && shx cp src/resources/css/comsysto.css build/docs/asciidoc/css/",
+        "tm-transform-resources": "shx cp ./node_modules/tm-transform/styles/css/* ./src/resources/css/",
+        "postprocess": "tm-transform -p asciidoc -d ./build/docs/asciidoc/"
+    },
+    "devDependencies": {
+        "node-sass": "^4.13.0",
+        "shx": "^0.3.2",
+        "tm-transform": "https://github.com/ChristianIvicevic/tm-transform"
+    },
+    "dependencies": {}
 }
