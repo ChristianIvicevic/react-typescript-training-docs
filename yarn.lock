@@ -1577,7 +1577,7 @@ title-case@^2.1.0:
 
 "tm-transform@https://github.com/ChristianIvicevic/tm-transform":
   version "0.1.0-SNAPSHOT"
-  resolved "https://github.com/ChristianIvicevic/tm-transform#c2be4283f8372151e4fd71e65d5f38473352ceb8"
+  resolved "https://github.com/ChristianIvicevic/tm-transform#a2962da79b7a0e61c67600d53ab1599d86c7d4c2"
   dependencies:
     ansi-regex "^5.0.0"
     callsites "^3.1.0"

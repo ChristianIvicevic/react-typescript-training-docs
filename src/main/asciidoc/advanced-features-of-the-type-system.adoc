@@ -33,12 +33,12 @@ Attempting to access properties that the respective types don't have in common w
 
 [source,typescript]
 ----
-const entity/* @TypeHint(Client | Project) */ = /* ... */;
+const entity/* : Client | Project */ = /* ... */;
 
-const entityId/* @TypeHint(number) */ = entity.id;
-const entityName/* @TypeHint(string) */ = entity.name;
-const entityDescription = entity./* @CompilerError(error: Property 'description' does not exist on type 'Client | Project'.\nProperty 'description' does not exist on type 'Client'.) */description/**/;
-const entityPhoneNumber = entity./* @CompilerError(error: Property 'phoneNumber' does not exist on type 'Client | Project'.\nProperty 'phoneNumber' does not exist on type 'Project'.) */phoneNumber/**/;
+const entityId/* : number */ = entity.id;
+const entityName/* : string */ = entity.name;
+const entityDescription = entity./* @CompilerError(Property 'description' does not exist on type 'Client | Project'.\nProperty 'description' does not exist on type 'Client'.) */description/**/;
+const entityPhoneNumber = entity./* @CompilerError(Property 'phoneNumber' does not exist on type 'Client | Project'.\nProperty 'phoneNumber' does not exist on type 'Project'.) */phoneNumber/**/;
 ----
 
 Even though Typescript error messages can be daunting at times they are usually really helpful to figure out what's actually causing the error if you track the different causes for bigger errors in the hierarchy.
@@ -65,15 +65,15 @@ Using the type guard in the previous snippet it is possible to access the entity
 
 [source,typescript]
 ----
-const entity/* @TypeHint(Client | Project) */ = /* ... */; // <1>
+const entity/* : Client | Project */ = /* ... */; // <1>
 
-const entityId/* @TypeHint(number) */ = entity.id; // <2>
-const entityName/* @TypeHint(string) */ = entity.name; // <2>
+const entityId/* : number */ = entity.id; // <2>
+const entityName/* : string */ = entity.name; // <2>
 
 if (isProject(entity)) { // <3>
-    const entityDescription/* @TypeHint(string) */ = entity.description; // <4>
+    const entityDescription/* : string */ = entity.description; // <4>
 } else {
-    const entityPhoneNumber/* @TypeHint(string) */ = entity.phoneNumber; // <5>
+    const entityPhoneNumber/* : string */ = entity.phoneNumber; // <5>
 }
 ----
 <1> In this outer scope `entity` is definitely of type `Client | Project`.
@@ -219,10 +219,10 @@ This new version will catch errors during compilation that were previously only 
 
 [source,typescript]
 ----
-const response/* @TypeHint(SearchResponse) */ = /* ... */;
+const response/* : SearchResponse */ = /* ... */;
 
-response.forEach((searchEntry/* @TypeHint(SearchEntry) */) => {
-    if (/* @CompilerError(error: This condition will always return 'false' since the types '"Client" | "Project" | "Factory"' and '"Porject"' have no overlap.) */searchEntry.kind === "Porject"/**/) {
+response.forEach((searchEntry/* : SearchEntry */) => {
+    if (/* @CompilerError(This condition will always return 'false' since the types '"Client" | "Project" | "Factory"' and '"Porject"' have no overlap.) */searchEntry.kind === "Porject"/**/) {
         // ...
     }
     // ...
@@ -277,13 +277,13 @@ type Factory = {
     location: string;
 };
 
-const rainbowFactory/* @TypeHint(Factory) */ = /* ... */;
+const rainbowFactory/* : Factory */ = /* ... */;
 
-const idAndNameTuple = pluck(rainbowFactory, ["id", "name"]);
+const idAndNameArray/* : (string | number)[] */ = pluck(rainbowFactory, ["id", "name"]);
 // -> [1, "Rainbow Factory"]
-const nameAndLocationTuple = pluck(rainbowFactory, ["name", "location"]);
+const nameAndLocationArray/* : string[] */ = pluck(rainbowFactory, ["name", "location"]);
 // -> ["Rainbow Factory", "Whimsyshire"]
-const errorTuple = pluck(rainbowFactory, ["name", /* @CompilerError(error: Type 'string' is not assignable to type '"id" | "name" | "description" | "location"'.) */"something"/**/]);
+const errorArray = pluck(rainbowFactory, ["name", /* @CompilerError(Type 'string' is not assignable to type '"id" | "name" | "description" | "location"'.) */"something"/**/]);
 ----
 
 The goal is to leverage Typescript utilities to make `pluck` aware of the type of the supplied object and propose as well as check for property names.
