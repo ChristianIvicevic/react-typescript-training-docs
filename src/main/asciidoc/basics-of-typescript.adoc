@@ -531,14 +531,14 @@ type TypeB = {
 };
 ----
 
-Defining their intersection is a one-liner
+Defining the intersection of the types `TypeA` and `TypeB` is a one-liner:
 
 [source,typescript]
 ----
 type Intersection = TypeA & TypeB;
 ----
 
-which is equivalent to this:
+The previous definition of the intersection of `TypeA` and `TypeB` is equivalent to the following type:
 
 [source,typescript]
 ----
