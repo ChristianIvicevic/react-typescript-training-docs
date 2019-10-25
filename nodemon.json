@@ -1,0 +1,5 @@
+{
+    "watch": ["src/"],
+    "ext": "adoc,html,scss,png,js",
+    "exec": "yarn build"
+}
