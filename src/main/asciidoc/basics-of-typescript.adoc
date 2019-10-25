@@ -547,6 +547,45 @@ type NumberPredicate = (value: number) => boolean; // <2>
 <1> Component properties in React are usually called Props.
 <2> These are function signatures.
 
+[NOTE]
+====
+You might have noticed that we have defined the `ComponentProperties` type using the `type` keyword instead of `interface`.
+Their syntax is slightly different (`type` using `=` and `;` while `interface` does not), but semantically they are the same.
+So the `ComponentProperties` can also be written as this:
+
+[source,typescript]
+----
+interface ComponentProperties {
+    active: boolean;
+    alignText: Alignment;
+    className: string;
+    disabled: boolean;
+    // ...
+}
+----
+
+However there is one side-effect called declaration merging you should be aware of when using either types or interfaces.
+When Typescript finds multiple interfaces with the very same name they are merged into a single declaration.
+This way it is possible to extend third-party libraries and types with custom extensions as long as they are interfaces.
+
+Imagine we are using the `express` library to create a Node-based backend server.
+The library exposes a type called `Request` and we'd like to implement logic for user authentication.
+In order for users to authenticate themselves, all requests have to include a special token in the header.
+Assume we have have a method that gets called before the request is handled by our registered handlers (something called middleware).
+This method should copy the token from the header to a special attribute, but it won't be able to inject data right away.
+We have to extend the original declaration of the `Request` type with a custom attribute first which is only possible with interfaces:
+
+[source,typescript]
+----
+export interface Request {
+    token: string;
+}
+----
+
+Actual types in comparison to interfaces cannot be merged at all and therefore we recommended to use types over interfaces unless you want others to extend your declarations.
+This is usually the case when writing libraries for third parties to consume.
+====
+
 [[intersection-types]]
 === Intersection Types
 Often it is necessary to drop the object-oriented codestyle and work with injected attributes using mixins.

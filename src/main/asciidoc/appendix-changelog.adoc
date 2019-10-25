@@ -18,16 +18,17 @@ All notable changes to this project will be documented on this page, and this pr
 === Added
 * A new section stub about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>> has been added.
 * Type hints are now displayed after declarations where Typescript can infer the respective types automatically.
+* {docs-repo-issues}/7[#7] - A note about the difference of types vs. interfaces has been added to the section about <<basics-of-typescript.adoc#type-aliases,type aliases>>.
 
 === Changed
 * The tip that <<advanced-features-of-the-type-system.adoc#tip-use-literal-types-in-favor-of-enums,literal types should be used in favor of string based enums>> has been extended to link the section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>>.
 * Replaced the buggy previous version of the Prism syntax highlighting library with a custom static Textmate-based transformer allowing for more features and annotations in code.
 * Compiler errors are no longer referenced via numbered bullets. Instead they are highlighted in red and wavy underline. Hovering over those will display a popover with the error message.
-* The section about <<basics-of-typescript.adoc#null-and-undefined,null and undefined>> has been reworked to better distinguish between both types and their usage. {docs-repo-issues}/5[#5]
+* {docs-repo-issues}/5[#5] - The section about <<basics-of-typescript.adoc#null-and-undefined,null and undefined>> has been reworked to better distinguish between both types and their usage.
 
 === Fixed
-* The section about <<basics-of-typescript.adoc#constant-enums,constant enums>> was violating the style guide. It has been rewritten to no longer contain sentence fragments. {docs-repo-issues}/1[#1]
-* The section about <<basics-of-typescript.adoc#intersection-types,intersection types>> was violating the style guide. It has been rewritten to no longer contain sentence fragments. {docs-repo-issues}/2[#2]
+* {docs-repo-issues}/1[#1] - The section about <<basics-of-typescript.adoc#constant-enums,constant enums>> was violating the style guide. It has been rewritten to no longer contain sentence fragments.
+* {docs-repo-issues}/2[#2] - The section about <<basics-of-typescript.adoc#intersection-types,intersection types>> was violating the style guide. It has been rewritten to no longer contain sentence fragments.
 
 == v0.1.0 - 2019-10-16
 
