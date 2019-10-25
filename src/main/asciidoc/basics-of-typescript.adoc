@@ -400,30 +400,68 @@ An `unknown` variable should only be used to read and write unknown data and not
 
 [[null-and-undefined]]
 === Null and Undefined
-Typescript distinguishes between variables defined as `null` or actually being `undefined`.
-Variables eplicitly have to be assigned `null` in order to describe that there is no data.
-`undefined` however is the value of variables that haven't been defined at all or explicitly being assigned `undefined`.
+Typescript distinguishes between variables explicitly defined as `null` or actually being `undefined`.
+Variables explicitly have to be assigned `null` and this is usually done to explicitly describe that there is no data available.
+`undefined` however is the default value of variables that haven't been defined at all or explicitly being assigned `undefined`.
+Furthermore each attribute not defined in an object is `undefined` as well.
 Colloquially `undefined` is equivalent to an optional value that might not have to be set (yet).
+
+[NOTE]
+====
+Imagine your application is consuming responses of a GraphQL API.
+The response bodies usually consist of two attributes `data` and `errors`.
+`data` is either defined or `null` in case the API explicitly returns no data, but the attribute is available at all times.
+On the other hand, `errors` does not have to be in the response at all when no errors have occurred.
+Therefore the `errors` attribute is considered optional, i.e. does not have to be part of the response body, and thus might be `undefined`.
+
+A response body of a successful query looks as follows:
+
+[source,json]
+----
+{
+    "data": {
+        "id": 1,
+        "name": "Rainbow Factory",
+        "location": "Whimsyshire"
+    }
+}
+----
+
+On the other hand a response body of a query that caused errors might look like this:
+[source,json]
+----
+{
+    "data": null,
+    "errors": [
+        {
+            "message": "Could not fetch factory with id '1'. The database service is currently not available.",
+            /* ... */
+        }
+    ]
+}
+----
+====
 
 What's awesome about Typescript is, that it is able to deduce whether a variable is defined in the current scope when you try to access it:
 
 [source,typescript]
 ----
-const mightBeUndefined = /* ... */; // <1>
+const apiResponse = /* ... */; // <1>
 
-const value1 = /* @CompilerError(Object is possibly 'undefined'.) */mightBeUndefined/**/.getValue();
+const hasErrors = /* @CompilerError(Object is possibly 'undefined'.) */apiResponse.errors/**/.length !== 0;
 
-if (mightBeUndefined !== undefined) {
-    const value2 = mightBeUndefined.getValue(); // <2>
+if (apiResponse.errors !== undefined) {
+    const hasActuallyErrors = apiResponse.errors.length !== 0; // <2>
 }
 ----
-<1> Without explicitly denoting the type of this variable, assume that it might be `undefined`.
-<2> This works just fine, since Typescript knows the object definitely isn't `undefined` in this scope and we even get code completion when attempting to call `getValue`.
+<1> Without explicitly denoting the type of this variable, assume that it contains an array `errors` that might be `undefined`.
+<2> This works just fine, since Typescript knows the object definitely isn't `undefined` in this scope and we even get code completion when attempting to type `length`.
 
 [NOTE]
 ====
-In the official coding guidelines of the Typescript and VS Code team `null` is forbidden entirely and they enforce to use `undefined` only.
+In the official coding guidelines of the teams working on the Typescript compiler and VS Code `null` is forbidden entirely and they enforce to use `undefined` only.
 This reduces possible errors and confusion between the two types and their interpretation in business logic.
+Therefore it is recommended to use `undefined` over `null` whenever possible and reasonable.
 ====
 
 [[never]]
