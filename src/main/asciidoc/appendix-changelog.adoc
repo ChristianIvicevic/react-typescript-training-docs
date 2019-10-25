@@ -17,9 +17,12 @@ All notable changes to this project will be documented on this page, and this pr
 
 === Added
 * A new section stub about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>> has been added.
+* Type hints are now displayed after declarations where Typescript can infer the respective types automatically.
 
 === Changed
 * The tip that <<advanced-features-of-the-type-system.adoc#tip-use-literal-types-in-favor-of-enums,literal types should be used in favor of string based enums>> has been extended to link the section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>>.
+* Replaced the buggy previous version of the Prism syntax highlighting library with a custom static Textmate-based transformer allowing for more features and annotations in code.
+* Compiler errors are no longer referenced via numbered bullets. Instead they are highlighted in red and wavy underline. Hovering over those will display a popover with the error message.
 
 === Fixed
 * The section about <<basics-of-typescript.adoc#constant-enums,constant enums>> was violating the style guide. It has been rewritten to no longer contain sentence fragments. {docs-repo-issues}/1[#1]
