@@ -26,6 +26,7 @@ All notable changes to this project will be documented on this page, and this pr
 
 === Fixed
 * The section about <<basics-of-typescript.adoc#constant-enums,constant enums>> was violating the style guide. It has been rewritten to no longer contain sentence fragments. {docs-repo-issues}/1[#1]
+* The section about <<basics-of-typescript.adoc#intersection-types,intersection types>> was violating the style guide. It has been rewritten to no longer contain sentence fragments. {docs-repo-issues}/2[#2]
 
 == v0.1.0 - 2019-10-16
 
