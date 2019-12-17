@@ -475,12 +475,36 @@ For a list of many useful mapped types and helpers already provided by Typescrip
 
 [[conditional-types]]
 == Conditional Types
+Conditional types allow to work with non-uniform type mappings based on a conditional expression.
+Imagine the task to write a type mapping `Unfold<T>` that maps any array type `T = U[]` to `U` itself, otherwise just `T`.
+In this case we can leverage the ternary syntax `A extends B ? C : D` used as follows:
 
-[WARNING]
-====
-TODO: This is a placeholder for content that hasn't been written yet.
-====
+[source,typescript]
+----
+type Unfold<T> =
+    T extends (infer U)[] // <1>
+        ? U
+        : T;
+----
+<1> This line contains a special keyword called `infer`.
+Just writing `U[]` is wrong since Typescript thinks that `U` refers to a previously declared type.
+The `infer` notation indicates that Typescript should infer whatever type is used at this point and make it available for the rest of this expression.
 
+Using this snippet an expression such as `Unfold<number[]>` yields `number` while `Unfold<string>` yields `string`.
+However, this snippet isn't entirely correct since it does not handle read-only arrays well.
+To fix this issue we can chain ternaries as follows:
+
+[source,typescript]
+----
+type Unfold<T> =
+    T extends (infer U)[]
+        ? U
+        : T extends readonly (infer U)[]
+            ? U
+            : T;
+----
+
+The new snippet will now work correctly for mutable arrays and read-only arrays in expressions such as `Unfold<readonly boolean[]>`.
 
 [[transparency-and-opaqueness]]
 == Transparency and Opaqueness
