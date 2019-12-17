@@ -483,7 +483,7 @@ Using the `Array.reduce` method on an empty array as the initial value will caus
 [source,typescript]
 ----
 const neverArray/* : never[] */ = [1, 2, 3].reduce((acc, next) => acc, []);
-//                                                                    ^^ <1>
+//                                                                  ^^ <1>
 ----
 <1> This array is considered to be of type `never[]` as Typescript cannot safely deduce its type.
 This prevents you to do virtually anything to it as Typescript wouldn't otherwise be able to check whether your operations are safe.
@@ -509,7 +509,7 @@ At some point you will stumble upon the above issue with `Array.reduce` and it c
 [source,typescript]
 ----
 const array/* : number[] */ = [1, 2, 3].reduce<number[]>((acc, next) => [...acc, next], []);
-//                                            ^^^^^^^^ <1>
+//                                          ^^^^^^^^ <1>
 ----
 <1> Type of the initial (and return) value, in our case making it an array of numbers.
 ====
@@ -782,13 +782,51 @@ const containsThirteen/* : boolean */ = array.some(isThirteen);
 <3> Notice how we are not explicitly writing `arg: number`.
 This is already implied by the definition of `Predicate` because `arg` must be a number.
 
-[[constraints]]
+[[constraints-and-defaults]]
 ==== Constraints and Defaults
+In all previous examples we had unconstrained generics which allowed virtually all types.
+Sometimes it is necessary to allow only certain types, especially when it doesn't make sense to apply an operation to all types.
+Assume we want to write a function that appends a HTML element to the DOM.
+The initial function signature might look as follows:
 
-[WARNING]
-====
-TODO: This is a placeholder for content that hasn't been written yet.
-====
+[source,typescript]
+----
+const appendChild = <ChildType>(newChild: ChildType) => /* ... */;
+----
+
+Currently this method allows any type parameter for `ChildType` which isn't semantically correct.
+It'd be more sensible to disallow adding some primitive types or types that don't relate to the DOM at all.
+The restriction in this case is basically that we are only considering `newChild` arguments that are `Node` objects or inherit from `Node`.
+To denote this constraint we use the `Type extends Constraint` syntax similar to class inheritance:
+
+[source,typescript]
+----
+const appendChild = <ChildType extends Node>(newChild: ChildType) => /* ... */;
+const tableElement/* : HTMLTableElement */ = document.createElement("table");
+
+appendChild(tableElement);
+appendChild(/* @CompilerError(Argument of type '13' is not assignable to parameter of type 'Node'.) */13/**/);
+----
+
+Another slightly different use case of more advanced features are default types for generics.
+Legacy class components in React have properties (usually called props) and state variables that can be typed using generics:
+
+[source,typescript]
+----
+abstract class Component<Props, State> { /* ... */ }
+class SimpleComponent extends /* @CompilerError(Generic type 'Component<Props, State>' requires 2 type argument(s).) */Component/**/ { /* ... */ }
+----
+
+Using this notation however, it is currently required to pass both props and state types to the class when extending it.
+Nevertheless there are definitely components which don't have any props or state at all, so it is necessary to assign default types.
+The notation for generic type defaults works the same as function parameter defaults:
+
+[source,typescript]
+----
+abstract class Component<Props = {}, State = {}> { /* ... */ }
+class SimpleComponent extends Component { /* ... */ }
+class StatelessComponent extends Component<CustomPropType> { /* ... */ }
+----
 
 [[showcase-generics-in-legacy-react-class-components]]
 ==== Showcase: Generics in Legacy React Class Components
@@ -797,7 +835,7 @@ A simplified base class for components is this one:
 
 [source,typescript]
 ----
-abstract class Component<Props, State> { // <1>
+abstract class Component<Props = {}, State = {}> { // <1>
     public readonly props: Props; // <2>
     protected readonly state: State; // <3>
 
