@@ -442,9 +442,9 @@ type FactoryPartial = {
 ----
 
 At its core the mapped type syntax describes how to iterate over all properties and which transformations to perform.
-Using the <<advanced-features-of-the-type-system.adoc#index-type-query-operator,index type query operator>> `keyof Factory` we can iterate over all properties `P in keyof Factory` and append the question mark.
-The type of the prop is denoted using the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>> `Factory[P]`.
-Since this transformation is commonly used it is possible to extract it into a generic type as follows:
+Using the <<advanced-features-of-the-type-system.adoc#index-type-query-operator,index type query operator>> `keyof Factory` we can iterate over all properties `P in keyof Factory` and append the question mark to each property.
+The type of the property is denoted using the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>> `Factory[P]`.
+Since this transformation is commonly used it is possible to extract it into a generic type by replacing all occurences of the `Factory` class with a generic type parameter `T`:
 
 [source,typescript]
 ----
@@ -453,7 +453,7 @@ type Partial<T> = {
 };
 ----
 
-The `Partial` type has an inversion to make all properties required, by removing the question marks using the `-?` notation as follows:
+There exists an inverse type for `Partial` that makes all properties required, by removing the question marks using the `-?` notation as follows:
 
 [source,typescript]
 ----
@@ -462,7 +462,7 @@ type Required<T> = {
 };
 ----
 
-Another very common mapped type is `Readonly`:
+Another very common mapped type is `Readonly` which prepends the `readonly` modifier to each property:
 
 [source,typescript]
 ----
