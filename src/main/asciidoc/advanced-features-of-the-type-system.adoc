@@ -294,7 +294,7 @@ In order to implement the method three utilities are necessary:
 * A utility to dynamically get all available properties of any given type in order to type check the elements in the property names array
 * Another utility to dynamically get the type of a property when requesting "the type of property `K` in type ``T``"
 
-[[index-query-type-operator]]
+[[index-type-query-operator]]
 === Index Type Query Operator
 In order to retrieve the properties of any given type, even generic types, you can use the index type query operator `keyof Type` to retrieve a literal string union of properties:
 
@@ -394,11 +394,84 @@ This method virtually maps all literal keys onto their values in the object and 
 
 [[mapped-types]]
 == Mapped Types
+When working with types, especially with models, it is often necessary to transform one type into another one at the type level.
+Typescript provides syntactical elements to simplify common type transformations described the the upcoming example.
+Assume you are working with the following entity type:
 
-[WARNING]
-====
-TODO: This is a placeholder for content that hasn't been written yet.
-====
+[source,typescript]
+----
+type Factory = {
+    id: number;
+    name: string;
+    description: string;
+    location: string;
+};
+----
+
+Now we are interested in writing an `updateFactory` function that takes a subset of these properties and updates only those in the database.
+First we need a new type where all properties are optionalized:
+
+[source,typescript]
+----
+type FactoryPartial = {
+    id?: number;
+    name?: string;
+    description?: string;
+    location?: string;
+};
+----
+
+Based on this type we can declare the `updateFactory` function as follows:
+
+[source,typescript]
+----
+const updateFactory = (id: number, newFactoryVariables: FactoryPartial) => { /* ... */ }
+
+// Move factory with ID = 1 to Munich
+updateFactory(1, { location: "Munich" });
+----
+
+Manually writing such a `FactoryPartial` type, especially for other types used throughout the application is a mundane task.
+The syntax to automate this in order to map `Factory` to an optionalized version is the following:
+
+[source,typescript]
+----
+type FactoryPartial = {
+    [P in keyof Factory]?: Factory[P];
+};
+----
+
+At its core the mapped type syntax describes how to iterate over all properties and which transformations to perform.
+Using the <<advanced-features-of-the-type-system.adoc#index-type-query-operator,index type query operator>> `keyof Factory` we can iterate over all properties `P in keyof Factory` and append the question mark.
+The type of the prop is denoted using the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>> `Factory[P]`.
+Since this transformation is commonly used it is possible to extract it into a generic type as follows:
+
+[source,typescript]
+----
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+};
+----
+
+The `Partial` type has an inversion to make all properties required, by removing the question marks using the `-?` notation as follows:
+
+[source,typescript]
+----
+type Required<T> = {
+    [P in keyof T]-?: T[P];
+};
+----
+
+Another very common mapped type is `Readonly`:
+
+[source,typescript]
+----
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+};
+----
+
+For a list of many useful mapped types and helpers already provided by Typescript refer to the chapter about <<appendix-utility-types.adoc#,utility types>>.
 
 [[conditional-types]]
 == Conditional Types
