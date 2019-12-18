@@ -395,7 +395,7 @@ This method virtually maps all literal keys onto their values in the object and 
 [[mapped-types]]
 == Mapped Types
 When working with types, especially with models, it is often necessary to transform one type into another one at the type level.
-Typescript provides syntactical elements to simplify common type transformations described the the upcoming example.
+Typescript provides syntactical elements to simplify common type transformations described in the upcoming example.
 Assume you are working with the following entity type:
 
 [source,typescript]
@@ -409,7 +409,8 @@ type Factory = {
 ----
 
 Now we are interested in writing an `updateFactory` function that takes a subset of these properties and updates only those in the database.
-First we need a new type where all properties are optionalized:
+This implies that the function does not require an entire `Factory` object, only a partial subset of properties, e.g. `{ name: "Puzzle Factory" }` or `{ description: "Puzzle Test Factory", location: "Munich" }`.
+To describe partial subsets we need a new type where all properties are optionalized using the `?` operator:
 
 [source,typescript]
 ----
@@ -421,18 +422,22 @@ type FactoryPartial = {
 };
 ----
 
-Based on this type we can declare the `updateFactory` function as follows:
+Based on this type we can declare the `updateFactory` function that updates only the new properties as follows:
 
 [source,typescript]
 ----
-const updateFactory = (id: number, newFactoryVariables: FactoryPartial) => { /* ... */ }
+const updateFactory = (id: number, newProperties: FactoryPartial) => { /* ... */ }
 
 // Move factory with ID = 1 to Munich
 updateFactory(1, { location: "Munich" });
+// Move factory with ID = 2 to Leipzig and change the description
+updateFactory(2, { description: "Sports car factory", location: "Leipzig" });
 ----
 
-Manually writing such a `FactoryPartial` type, especially for other types used throughout the application is a mundane task.
-The syntax to automate this in order to map `Factory` to an optionalized version is the following:
+The previous snippet shows use cases where you can supply only partial `Factory` properties which are internally used to update the original factory.
+This works since we have manually created a `FactoryPartial` type to optionalize all available properties.
+Manually writing such a `FactoryPartial` type, especially for other types and use cases used throughout the application is a mundane task.
+The syntax to automate mapping `Factory` to an optionalized version is the following:
 
 [source,typescript]
 ----
@@ -441,8 +446,9 @@ type FactoryPartial = {
 };
 ----
 
-At its core the mapped type syntax describes how to iterate over all properties and which transformations to perform.
-Using the <<advanced-features-of-the-type-system.adoc#index-type-query-operator,index type query operator>> `keyof Factory` we can iterate over all properties `P in keyof Factory` and append the question mark to each property.
+At its core the mapped type syntax describes how to iterate over all properties and which transformations to perform on each one of them.
+Using the <<advanced-features-of-the-type-system.adoc#index-type-query-operator,index type query operator>> `keyof Factory` we iterate over all properties using the expression `P in keyof Factory`.
+For each of these properties we append the question mark to mark them as optional.
 The type of the property is denoted using the <<advanced-features-of-the-type-system.adoc#indexed-access-operator,indexed access operator>> `Factory[P]`.
 Since this transformation is commonly used it is possible to extract it into a generic type by replacing all occurences of the `Factory` class with a generic type parameter `T`:
 
@@ -453,7 +459,7 @@ type Partial<T> = {
 };
 ----
 
-There exists an inverse type for `Partial` that makes all properties required, by removing the question marks using the `-?` notation as follows:
+There exists an inverse type for `Partial` called `Required` that makes all properties required by removing the question marks using the `-?` notation as follows:
 
 [source,typescript]
 ----
