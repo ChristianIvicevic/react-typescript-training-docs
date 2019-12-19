@@ -529,8 +529,110 @@ This will now work correctly for expressions such as `Unfold<readonly boolean[]>
 
 [[transparency-and-opaqueness]]
 == Transparency and Opaqueness
+Comparing apples to oranges isn't sensible in pretty much all cases, thus we need to compare apples to apples.
+Unfortunately even this can sometimes cause really unexpected runtime bugs when using Typescript.
+Imagine you're writing a backend application for a bank that handles incoming transaction requests and performs corresponding operations on the bank accounts.
+The following snippet is syntactically correct, but has a severe semantical bug, can you spot the bug?
 
-[WARNING]
-====
-TODO: This is a placeholder for content that hasn't been written yet.
-====
+[source,typescript]
+----
+type AccountNumber = number;
+type Currency = number;
+
+type TransferRequestBody = {
+    sourceAccountNumber: number;
+    amount: number;
+    /* ... */
+};
+
+const deductMoney = (accountNumber: AccountNumber, amount: Currency) => { /* ... */ };
+
+const handleTransferRequest = (transferRequestBody: TransferRequestBody) => {
+    const { sourceAccountNumber, amount } = transferRequestBody;
+    deductMoney(amount, sourceAccountNumber);
+    /* ... */
+};
+----
+
+Almost unnoticed we're invoking `deductMoney` with flipped arguments which is wrong.
+Even though the types `AccountNumber` and `Currency` are different in name, they are considered equal in structure.
+Typescript compares types structurally by default, thus types are called transparent.
+In order to introduce nominal type checks the concept of opaque types is necessary.
+Such opaque types are different and hide their internal details and are only compatible when used explicitly.
+There are two variants of opaque types, weak and strong ones we will take a look at.
+First we'll introduce an `Opaque<T>` type for weak opaque types that will complain when we're using them implicitly:
+
+[source,typescript]
+----
+type Opaque<T> = T & { readonly __opaque__: unique symbol }; // <1>
+
+type AccountNumber = Opaque<number>; // <2>
+type Currency = Opaque<number>; // <2>
+
+type TransferRequestBody = {
+    sourceAccountNumber: number;
+    amount: number;
+    /* ... */
+};
+
+const deductMoney = (accountNumber: AccountNumber, amount: Currency) => { /* ... */ };
+
+const handleTransferRequest = (transferRequestBody: TransferRequestBody) => {
+    const { sourceAccountNumber, amount } = transferRequestBody;
+    deductMoney(/* @CompilerError(Argument of type 'number' is not assignable to parameter of type 'Opaque&lt;number&gt;'.\nType 'number' is not assignable to type '{ readonly __opaque__: unique symbol; }'.) */amount/**/, sourceAccountNumber); // <3>
+    /* ... */
+};
+----
+<1> This new type extends any type `T` with a custom property called `+__opaque__+` which behaves as a marker.
+It is considered to be a `unique symbol` making it incompatible with any `T` unless asserted explicitly.
+<2> Instead of `number` we declare these types as `Opaque<number>` to distinguish between the two.
+<3> This line now errors during type-checking since the primitive type `number` is not compatible to our opaque type without explicit type assertions.
+
+In order to fix this error we need to explicitly assert the type when invoking `deductMoney`:
+
+[source,typescript]
+----
+/* ... */
+const handleTransferRequest = (transferRequestBody: TransferRequestBody) => {
+    const { sourceAccountNumber, amount } = transferRequestBody;
+    deductMoney(amount as Currency, sourceAccountNumber as AccountNumber); // <1>
+    /* ... */
+};
+----
+<1> This line no longer errors since we're using a type assertion to explicitly work with the opaque types.
+Unfortunately though this is still semantically incorrect.
+
+We've seen in the previous snippet that weak opaque types enforce explicit type assertions, which make the developer rethink their intent when invoking the function.
+After explicit type assertions `AccountNumber` and `Currency` are considered equal though since they are just numbers.
+Therefore we're interested in using strong opaque types to prevent this unintended equality and thus we're introducing a `StrongOpaque<T, S>` type:
+
+[source,typescript]
+----
+type StrongOpaque<T, S extends string> = T & { readonly __opaque__: S }; // <1>
+
+type AccountNumber = StrongOpaque<number, "AccountNumber">; // <2>
+type Currency = StrongOpaque<number, "Currency">; // <2>
+
+type TransferRequestBody = {
+    sourceAccountNumber: number;
+    amount: number;
+    /* ... */
+};
+
+const deductMoney = (accountNumber: AccountNumber, amount: Currency) => { /* ... */ };
+
+const handleTransferRequest = (transferRequestBody: TransferRequestBody) => {
+    const { sourceAccountNumber, amount } = transferRequestBody;
+    deductMoney(/* @CompilerError(Argument of type 'number' is not assignable to parameter of type 'StrongOpaque&lt;number, "AccountNumber"&gt;'.\nType 'number' is not assignable to type '{ readonly __opaque__: "AccountNumber"; }'.) */sourceAccountNumber/**/, amount); // <3>
+    deductMoney(/* @CompilerError(Argument of type 'number' is not assignable to parameter of type 'StrongOpaque&lt;number, "AccountNumber"&gt;'.\nType 'number' is not assignable to type '{ readonly __opaque__: "AccountNumber"; }'.) */amount/**/, sourceAccountNumber); // <3>
+    deductMoney(/* @CompilerError(Argument of type 'StrongOpaque&lt;number, "Currency"&gt;' is not assignable to parameter of type 'StrongOpaque&lt;number, "AccountNumber"&gt;'.\nType 'StrongOpaque&lt;number, "Currency"&gt;' is not assignable to type '{ readonly __opaque__: "AccountNumber"; }'.) */amount as Currency/**/, sourceAccountNumber as AccountNumber); // <4>
+    deductMoney(sourceAccountNumber as AccountNumber, amount as Currency); // <5>
+    /* ... */
+};
+----
+<1> The new `StrongOpaque<T, S>` extends any type `T` with a property that is any custom string literal which is usually called brand or tag.
+This new string literal property is used to distinguish two types accordingly.
+<2> For these types we're manually defining their tag to distinguish them.
+<3> In both cases the type-checking will fail since strong opaque types must have an explicit type assertion.
+<4> The `Currency` type cannot be assigned to `AccountNumber` since they differ in the value of `+__opaque__+` and thus makes them incompatible.
+<5> This is only way to invoke the function correct, using explicit type assertions and the correct order.

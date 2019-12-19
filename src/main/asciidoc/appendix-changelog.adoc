@@ -16,12 +16,12 @@ All notable changes to this project will be documented on this page, and this pr
 == Unreleased
 
 === Added
-* A new section stub about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>> has been added.
 * Type hints are now displayed after declarations where Typescript can infer the respective types automatically.
 * {docs-repo-issues}/7[#7] - A note about the difference of types vs. interfaces has been added to the section about <<basics-of-typescript.adoc#type-aliases,type aliases>>.
 * A new section about <<basics-of-typescript.adoc#constraints-and-defaults,constraints and defaults>> for generic types has been added.
 * A new section about <<advanced-features-of-the-type-system.adoc#mapped-types,mapped types>> has been added.
 * A new section about <<advanced-features-of-the-type-system.adoc#conditional-types,conditional types>> has been added.
+* A new section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>> has been added.
 
 === Changed
 * The tip that <<advanced-features-of-the-type-system.adoc#tip-use-literal-types-in-favor-of-enums,literal types should be used in favor of string based enums>> has been extended to link the section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>>.
