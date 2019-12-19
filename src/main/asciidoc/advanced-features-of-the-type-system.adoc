@@ -482,23 +482,21 @@ For a list of many useful mapped types and helpers already provided by Typescrip
 [[conditional-types]]
 == Conditional Types
 Conditional types allow to work with non-uniform type mappings based on a conditional expression.
-Imagine the task to write a type mapping `Unfold<T>` that maps any array type `T = U[]` to `U` itself, otherwise just `T`:
+Imagine the task to write a type mapping `Unpack<T>` that maps any array type `T = U[]` to `U` itself, otherwise just `T`:
 
 [source,typescript]
 ----
-// Equivalent to number
-type UnfoldExample1 = Unfold<number[]>;
-// Equivalent to string
-type UnfoldExample2 = Unfold<string[]>;
-// Equivalent to boolean, since the input is not an array
-type UnfoldExample3 = Unfold<boolean>;
+type UnpackExample1/* : number */ = Unpack<number[]>;
+type UnpackExample2/* : string */ = Unpack<string[]>;
+// Doesn't change the outcome, since the input is not an array
+type UnpackExample3/* : boolean */ = Unpack<boolean>;
 ----
 
 In order to implement the conditional logic we can leverage the ternary syntax `A extends B ? C : D` used as follows:
 
 [source,typescript]
 ----
-type Unfold<T> =
+type Unpack<T> =
     T extends (infer U)[] // <1>
         ? U
         : T;
@@ -507,7 +505,7 @@ type Unfold<T> =
 Just writing `U[]` will cause an error since Typescript thinks that `U` refers to a previously declared type.
 The `infer` notation indicates that Typescript should infer whatever type is used at this point and make it available for the rest of this expression.
 
-The type `Unfold<T>` checks whether the supplied type argument `T` is any array using the `T extends (infer U)[]` expression.
+The type `Unpack<T>` checks whether the supplied type argument `T` is any array using the `T extends (infer U)[]` expression.
 If `T` is an array the compiler infers the actual type stored in the array and makes it accessible via `U` and returns it.
 Otherwise, the type `T` is returned unchanged.
 However, this snippet isn't entirely correct since it does not handle read-only arrays well.
@@ -515,7 +513,7 @@ To fix this issue we can chain ternaries as follows:
 
 [source,typescript]
 ----
-type Unfold<T> =
+type Unpack<T> =
     T extends (infer U)[]
         ? U
         : T extends readonly (infer U)[]
@@ -524,8 +522,8 @@ type Unfold<T> =
 ----
 
 The new snippet will have the same behavior for mutable arrays and fallback to a second conditional expression otherwise.
-In the second conditional expression `Unfold<T>` checks whether the supplied argument `T` is any read-only array using the `T extends readonly (infer U)[]` expression and returns either `U` or `T` accordingly.
-This will now work correctly for expressions such as `Unfold<readonly boolean[]>` that haven't been tracked with the initial version.
+In the second conditional expression `Unpack<T>` checks whether the supplied argument `T` is any read-only array using the `T extends readonly (infer U)[]` expression and returns either `U` or `T` accordingly.
+This will now work correctly for expressions such as `Unpack<readonly boolean[]>` that haven't been tracked with the initial version.
 
 [[transparency-and-opaqueness]]
 == Transparency and Opaqueness
