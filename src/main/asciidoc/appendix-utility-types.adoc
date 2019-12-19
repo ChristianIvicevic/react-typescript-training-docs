@@ -2,24 +2,138 @@
 = Utility Types
 include::attributes.adoc[]
 
-[WARNING]
+In this section you will find multiple utility types which are either commonly used or useful in specific scenarios.
+The most common ones are officially part of Typescript itself.
+We'll denote which ones are available in the compiler and which ones are custom.
+Furthermore we'll give examples on how to use each of these types.
+
+[[except]]
+== `Except<T, K>`
+[source,typescript]
+----
+type Except<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+----
+
+Using `Except<T, K>` you can create a type by dropping all properties listed in `K` from `T`.
+This is a strict version of `<<#omit,Omit>>`.
+
+[source,typescript]
+----
+type Factory = {
+    id: number;
+    name: string;
+    description: string;
+    location: string;
+};
+
+type FactoryWithoutDescription/* : { id: number; name: string; location: string } */ = Except<Factory, "description">;
+type FactoryWithoutDescriptionOrLocation/* : { id: number; name: string } */ = Except<Factory, "description" | "location">;
+type FactoryStrictError = Except<Factory, /* @CompilerError(Type '"doesnotexist"' does not satisfy the constraint '"id" | "name" | "description" | "location"'.)*/"doesnotexist"/**/>; // <1>
+----
+<1> Compared to `Omit` the `Except` type makes sure you can only specify properties that exist on the object type in the first place.
+Using `Omit` this line would not error.
+
+[[exclude]]
+== `Exclude<T, U>`
+[NOTE]
 ====
-TODO: This is a placeholder for content that hasn't been written yet.
+`Exclude<T, U>` is a predefined conditional type included in Typescript.
 ====
 
-== `Record<K, V>`
-== `Partial<T>`
-== `PartialDeep<T>`
-== `Required<T>`
-== `Readonly<T>`
-== `ReadonlyDeep<T>`
-== `Pick<T, K>`
-== `Omit<T, K>`
-== `Except<T, K>`
-== `Exclude<T, U>`
+[source,typescript]
+----
+type Exclude<T, U> = T extends U ? never : T;
+----
+
+The `Exclude<T, U>` type excludes all types from `T` that are assignable to `U` which is basically a set difference.
+This utility type is commonly used for string literals.
+
+[source,typescript]
+----
+type PublicFactoryLocations = "Munich" | "Leipzig" | "Ingolstadt";
+type PorscheLocations = "Leipzig" | "Stuttgart";
+
+type NonPorscheLocations/* : "Munich" | "Ingolstadt" */ = Exclude<PublicFactoryLocations, PorscheLocations>;
+----
+
+On rare occasions this can be applied to more complex types as follows:
+
+[source,typescript]
+----
+type ComplexType = string | number | () => void;
+type ExcludeCallableTypes/* : string | number */ = Exclude<ComplexType, Function>;
+----
+
+[[extract]]
 == `Extract<T, U>`
+[NOTE]
+====
+`Extract<T, U>` is a predefined conditional type included in Typescript.
+====
+
+[source,typescript]
+----
+type Extract<T, U> = T extends U ? T : never;
+----
+
+The `Extract<T, U>` type extracts all types from `T` that are assignable to `U` which is basically a set intersection.
+This utility type is commonly used for string literals.
+
+[source,typescript]
+----
+type PublicFactoryLocations = "Munich" | "Leipzig" | "Ingolstadt";
+type PorscheLocations = "Leipzig" | "Stuttgart";
+
+type PublicPorscheLocations/* : "Leipzig" */ = Extract<PublicFactoryLocations, PorscheLocations>;
+----
+
+On rare occasions this can be applied to more complex types as follows:
+
+[source,typescript]
+----
+type ComplexType = string | number | () => void;
+type ExtractCallableTypes/* : () => void */ = Extract<ComplexType, Function>;
+----
+
+[[literal-union]]
+== `LiteralUnion<T, U>`
+[source,typescript]
+----
+type LiteralUnion<
+    T extends U,
+    U extends null | undefined | string | number | boolean | symbol | bigint
+> = T | (U & { _?: never });
+----
+
+The custom `LiteralUnion` type creates a union type by combining primitive types and literal types without sacrificing auto-completion for literals.
+This can be necessary due to an unresovable design limitation described in a https://github.com/Microsoft/TypeScript/issues/29729[Typescript issue found on Github].
+
+[source,typescript]
+----
+type Color = "red" | "blue" | string;
+const color: Color = ""; // <1>
+
+type AnotherColor = LiteralUnion<"red" | "blue", string>;
+const anotherColor: AnotherColor = ""; // <2>
+----
+<1> While trying to define the value of this variable you will not get auto-completion for the literals `"red"` and `"blue"`.
+<2> While trying to define the value of this variable you will get auto-completion for the literals `"red"` and `"blue"`.
+
+== `Mutable<T>`
 == `NonNullable<T>`
 == `NonNullableDeep<T>`
+[[omit]]
+== `Omit<T, K>`
+== `Opaque<T>`
 == `Parameters<T>`
+== `Partial<T>`
+== `PartialDeep<T>`
+== `Pick<T, K>`
+== `Readonly<T>`
+== `ReadonlyDeep<T>`
+== `Record<K, V>`
+== `Required<T>`
 == `ReturnType<T>`
-== `LiteralUnion<T>`
+== `SetOptional<T, K>`
+== `SetRequired<T, K>`
+== `StrongOpaque<T, S>`

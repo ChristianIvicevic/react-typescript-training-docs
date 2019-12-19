@@ -22,6 +22,10 @@ All notable changes to this project will be documented on this page, and this pr
 * A new section about <<advanced-features-of-the-type-system.adoc#mapped-types,mapped types>> has been added.
 * A new section about <<advanced-features-of-the-type-system.adoc#conditional-types,conditional types>> has been added.
 * A new section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>> has been added.
+* A new section about the utility type `<<appendix-utility-types.adoc#except,Except>>` has been added.
+* A new section about the utility type `<<appendix-utility-types.adoc#exclude,Exclude>>` has been added.
+* A new section about the utility type `<<appendix-utility-types.adoc#extract,Extract>>` has been added.
+* A new section about the utility type `<<appendix-utility-types.adoc#literal-union,LiteralUnion>>` has been added.
 
 === Changed
 * The tip that <<advanced-features-of-the-type-system.adoc#tip-use-literal-types-in-favor-of-enums,literal types should be used in favor of string based enums>> has been extended to link the section about <<advanced-features-of-the-type-system.adoc#transparency-and-opaqueness,transparency and opaqueness>>.
