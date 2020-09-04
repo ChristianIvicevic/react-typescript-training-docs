@@ -15,7 +15,7 @@
         "postprocess": "tm-transform -p asciidoc -d ./build/docs/asciidoc/"
     },
     "devDependencies": {
-        "node-sass": "^4.13.0",
+        "node-sass": "^4.13.1",
         "nodemon": "^1.19.4",
         "shx": "^0.3.2",
         "tm-transform": "https://github.com/ChristianIvicevic/tm-transform"
